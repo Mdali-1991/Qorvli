@@ -47,6 +47,28 @@ class SignUpTests(TestCase):
         self.assertEqual(response.status_code, 200)  # form redisplayed with error
         self.assertFalse(User.objects.filter(username="another").exists())
 
+    def test_signup_rejects_reserved_username(self):
+        response = self.client.post(
+            reverse("accounts:signup"),
+            {
+                "username": "Edit",
+                "first_name": "A",
+                "last_name": "B",
+                "email": "edit@example.com",
+                "password1": "StrongPass123!",
+                "password2": "StrongPass123!",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "This username is reserved")
+        self.assertFalse(User.objects.filter(username__iexact="edit").exists())
+
+    def test_signup_redirects_logged_in_user_to_feed(self):
+        User.objects.create_user(username="member", password="pass12345")
+        self.client.login(username="member", password="pass12345")
+        response = self.client.get(reverse("accounts:signup"))
+        self.assertRedirects(response, reverse("posts:feed"))
+
 
 class LoginLogoutTests(TestCase):
     def setUp(self):

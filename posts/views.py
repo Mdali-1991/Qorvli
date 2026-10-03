@@ -15,6 +15,7 @@ User = get_user_model()
 
 
 @login_required
+@require_http_methods(["GET"])
 def feed_view(request):
     query = request.GET.get("q", "").strip()
     posts = (
@@ -55,7 +56,7 @@ def feed_view(request):
 
 
 @login_required
-@require_http_methods(["POST"])
+@require_POST
 def create_post_view(request):
     form = PostForm(request.POST, request.FILES)
     if form.is_valid():

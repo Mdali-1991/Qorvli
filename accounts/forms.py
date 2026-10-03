@@ -5,6 +5,10 @@ from django.core.exceptions import ValidationError
 from .models import User
 
 
+# Usernames that would clash with fixed URL segments under /accounts/profile/.
+RESERVED_USERNAMES = {"edit"}
+
+
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
@@ -44,6 +48,12 @@ class SignUpForm(UserCreationForm):
         self.fields["password2"].widget.attrs.update(
             {"class": "form-control qorvli-input", "placeholder": "Confirm password"}
         )
+
+    def clean_username(self):
+        username = super().clean_username()
+        if username.lower() in RESERVED_USERNAMES:
+            raise ValidationError("This username is reserved. Please choose another.")
+        return username
 
     def clean_email(self):
         email = self.cleaned_data.get("email", "").lower().strip()

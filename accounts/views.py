@@ -5,7 +5,7 @@ from django.db.models import Exists, OuterRef
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods, require_POST
 from django.views.generic import CreateView
 
 from posts.models import Post, Like
@@ -17,6 +17,12 @@ class SignUpView(CreateView):
     form_class = SignUpForm
     template_name = "accounts/signup.html"
     success_url = reverse_lazy("accounts:login")
+
+    def dispatch(self, request, *args, **kwargs):
+        # A signed-in user has no reason to create another account.
+        if request.user.is_authenticated:
+            return redirect("posts:feed")
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -31,6 +37,7 @@ class SignUpView(CreateView):
         return super().form_invalid(form)
 
 
+@require_http_methods(["GET", "POST"])
 def login_view(request):
     if request.user.is_authenticated:
         return redirect("posts:feed")
@@ -72,6 +79,7 @@ def logout_view(request):
 
 
 @login_required
+@require_http_methods(["GET"])
 def profile_view(request, username):
     profile_user = get_object_or_404(User, username=username)
     posts = (
@@ -94,6 +102,7 @@ def profile_view(request, username):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def edit_profile_view(request):
     if request.method == "POST":
         form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
