@@ -1,9 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Exists, OuterRef, Q
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST, require_http_methods
 
@@ -39,14 +40,14 @@ def feed_view(request):
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
-    post_form = PostForm()
-    comment_form = CommentForm()
+    # Distinct id prefixes so the composer and the comment inputs don't both
+    # render id="id_content" (duplicate ids are invalid HTML).
+    post_form = PostForm(auto_id="id_post_%s")
 
     context = {
         "page_obj": page_obj,
         "posts": page_obj.object_list,
         "post_form": post_form,
-        "comment_form": comment_form,
         "query": query,
         "suggested_users": User.objects.exclude(pk=request.user.pk).order_by("-date_joined")[:5],
     }
@@ -75,7 +76,7 @@ def create_post_view(request):
 def edit_post_view(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if post.author != request.user:
-        return HttpResponseForbidden("You do not have permission to edit this post.")
+        raise PermissionDenied("You do not have permission to edit this post.")
 
     if request.method == "POST":
         form = PostForm(request.POST, request.FILES, instance=post)
@@ -95,7 +96,7 @@ def edit_post_view(request, pk):
 def delete_post_view(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if post.author != request.user:
-        return HttpResponseForbidden("You do not have permission to delete this post.")
+        raise PermissionDenied("You do not have permission to delete this post.")
     post.delete()
     messages.success(request, "Your post has been deleted.")
     return redirect("posts:feed")
@@ -122,7 +123,7 @@ def add_comment_view(request, pk):
 def delete_comment_view(request, pk):
     comment = get_object_or_404(Comment, pk=pk)
     if comment.author != request.user and comment.post.author != request.user:
-        return HttpResponseForbidden("You do not have permission to delete this comment.")
+        raise PermissionDenied("You do not have permission to delete this comment.")
     comment.delete()
     messages.success(request, "Comment deleted.")
     return redirect("posts:feed")

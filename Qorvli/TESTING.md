@@ -18,10 +18,12 @@ python manage.py test
 
 | App | What is covered |
 |---|---|
-| `accounts` | Signup form validation (duplicate email rejected), login with correct/incorrect credentials, logout requires login, profile page requires login, editing your own profile updates the database, fallback avatar URL is generated when no picture is uploaded |
-| `posts` | Feed requires login, search filters posts by content, creating a post with empty content is rejected, creating a post with valid content succeeds, only the post owner can edit/delete their post (403 for everyone else), comments can be added/rejected when empty, a comment can be deleted by its author **or** the post owner but not by an unrelated user, liking toggles a `Like` row on/off, the one-like-per-user database constraint is enforced |
+| `accounts` | Signup form validation (duplicate email rejected), login with correct/incorrect credentials, login ignores an external `?next=` URL but follows an internal one, logout works via POST and rejects GET (405), profile page requires login, edit-profile page loads and saving it updates the database, fallback avatar URL is generated when no picture is uploaded |
+| `posts` | Feed requires login, search filters posts by content, creating a post with empty content is rejected, creating a post with valid content succeeds, only the post owner can edit/delete their post (custom 403 page for everyone else), comments can be added/rejected when empty, a comment can be deleted by its author **or** the post owner but not by an unrelated user, liking toggles a `Like` row on/off, the one-like-per-user database constraint is enforced |
 
-All tests pass locally with SQLite and against Postgres (`DATABASE_URL`).
+31 tests, all passing (`python manage.py test`). `flake8` and `pycodestyle`
+report no issues with the settings in `setup.cfg`, and
+`python manage.py makemigrations --check` reports no pending model changes.
 
 ## 2. Manual test procedure
 
@@ -34,14 +36,14 @@ Chrome (DevTools device emulation) and keyboard-only navigation.
 | 2 | Duplicate email blocked | Sign up again with an email already in use | Form re-displays with "An account with this email already exists." | Pass |
 | 3 | Login (valid) | Enter correct username/password | Redirected to feed, "Welcome back" message shown | Pass |
 | 4 | Login (invalid) | Enter wrong password | Form re-displays with "Invalid username or password." — no user is logged in | Pass |
-| 5 | Logout | Click Logout | Session ends, redirected to login | Pass |
+| 5 | Logout | Click Logout (submits a POST form) | Session ends, redirected to login | Pass |
 | 6 | Create post (text) | Type text in composer, click Post | Post appears at top of feed immediately | Pass |
 | 7 | Create post (empty) | Submit composer with no text | Post rejected, error message shown, nothing added to feed | Pass |
 | 8 | Create post with image | Attach a JPG under 8MB | Post is created with the image displayed inline | Pass |
 | 9 | Oversized image rejected | Attach an image over 8MB | Form error: "Image file too large" | Pass |
 | 10 | Edit own post | Open a post's "..." menu → Edit → change text → Save | Feed shows updated text | Pass |
 | 11 | Delete own post | "..." menu → Delete → confirm in modal | Post removed from feed, confirmation message shown | Pass |
-| 12 | Cannot edit/delete others' posts | Log in as a different user, try to visit another user's edit-post URL directly | 403 Forbidden page returned | Pass |
+| 12 | Cannot edit/delete others' posts | Log in as a different user, try to visit another user's edit-post URL directly | Custom 403 page returned, post unchanged | Pass |
 | 13 | Add comment | Open comments on a post, type a comment, submit | Comment appears under the post without a full page reload feel (redirect + anchor) | Pass |
 | 14 | Delete comment (own) | Delete a comment you wrote | Comment removed | Pass |
 | 15 | Delete comment (as post owner) | Delete someone else's comment on your own post | Comment removed | Pass |
@@ -67,5 +69,15 @@ Chrome (DevTools device emulation) and keyboard-only navigation.
 | Forms gave no visual feedback between click and page response, so a slow connection made it look like nothing happened. | Test 6, 20 | Added a shared `initSubmitSpinners()` handler in `main.js` that disables the submit button and shows a spinner label while any form is submitting. |
 | Missing database migrations meant the project could not be migrated on a clean checkout. | Test 1 (initial setup) | Generated and committed `accounts/migrations/0001_initial.py` and `posts/migrations/0001_initial.py`. |
 | The like button's filled/unfilled state used an invalid template expression (`{% if post.is_liked_by:request.user %}`), which Django cannot resolve — so a post you had already liked still rendered with an empty heart after a page reload, even though the `Like` row existed in the database. | Test 17, re-checked after a page refresh | Annotated the `Post` queryset in `feed_view` and `profile_view` with `is_liked = Exists(Like.objects.filter(post=OuterRef("pk"), user=request.user))` and updated the templates to use `post.is_liked`, so the correct state is calculated in the database query instead of an unsupported template lookup. |
+
+| The "Edit Profile" page always returned 404. `profile/<str:username>/` was listed before `profile/edit/` in `accounts/urls.py`, so "edit" was treated as a username. | Code review / automated test `test_edit_profile_updates_bio` | Moved `profile/edit/` above the username pattern. |
+| The automated test suite errored on a clean checkout (`Missing staticfiles manifest entry`) because the manifest static storage needs `collectstatic`. | Running `python manage.py test` on a fresh clone | Tests now use Django's plain `StaticFilesStorage` (`settings.py`). |
+| Open redirect: after login, any `?next=` URL was followed, including external sites. | Security review | `login_view` now checks `url_has_allowed_host_and_scheme` before redirecting. |
+| Logout worked over GET, so any page could log a user out with a link or image. | Security review | `logout_view` is `@require_POST`; the navbar uses a small form with a CSRF token. |
+| The composer and every comment box rendered `id="id_content"`, giving duplicate ids (invalid HTML) and unlabelled inputs. | HTML validation | Composer uses `auto_id="id_post_%s"`; each comment input has a unique id and a visually hidden `<label>`. |
+| The composer placeholder showed the literal text `{{ user }}`. | Manual test 6 | Placeholder changed to "What's happening?" (template tags are not rendered inside Python strings). |
+| The photo input was `display: none`, so keyboard users could not attach an image; picking a file wrote the filename into the icon element. | Test 24 | Input is now visually hidden but focusable, with a focus ring on its label; the filename goes into a dedicated `<span>`. |
+| The like button's `aria-pressed` / `aria-label` didn't change after an AJAX toggle. | Test 25 | `main.js` updates both attributes from the JSON response. |
+| `makemigrations --check` found pending changes (primary-key type on `User`, index name on `Post`). | Code review | Added `accounts/migrations/0002_alter_user_id.py`; gave the `Post` index an explicit name matching the existing migration. |
 
 No known bugs remain unfixed at the time of submission.

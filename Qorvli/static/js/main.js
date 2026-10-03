@@ -3,6 +3,12 @@
  * Handles AJAX like toggling, comment panel expansion, and small UX polish.
  */
 
+/*
+ * getCookie() is taken from the Django documentation, "Cross Site Request
+ * Forgery protection - Acquiring the token if CSRF_USE_SESSIONS and
+ * CSRF_COOKIE_HTTPONLY are False":
+ * https://docs.djangoproject.com/en/5.0/howto/csrf/#acquiring-the-token-if-csrf-use-sessions-and-csrf-cookie-httponly-are-false
+ */
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== "") {
@@ -119,6 +125,8 @@ function initLikeButtons() {
                     const countSpan = button.querySelector(".qorvli-like-count");
 
                     countSpan.textContent = data.like_count;
+                    button.setAttribute("aria-pressed", data.liked ? "true" : "false");
+                    button.setAttribute("aria-label", data.liked ? "Unlike this post" : "Like this post");
 
                     if (data.liked) {
                         button.classList.add("liked");
@@ -180,9 +188,9 @@ function initFileLabels() {
             const label = input.closest(".qorvli-file-label");
             if (input.files && input.files.length > 0) {
                 label.classList.add("has-file");
-                const textNode = label.childNodes[1];
-                if (textNode) {
-                    textNode.textContent = " " + input.files[0].name;
+                const labelText = label.querySelector(".qorvli-file-label-text");
+                if (labelText) {
+                    labelText.textContent = input.files[0].name;
                 }
             }
         });
@@ -206,9 +214,9 @@ function showToast(message, type) {
     alertDiv.className = "alert qorvli-alert qorvli-alert-" + (type || "info") + " alert-dismissible fade show";
     alertDiv.setAttribute("role", "alert");
     alertDiv.innerHTML =
-        '<i class="bi bi-info-circle-fill"></i> ' +
-        message +
+        '<i class="bi bi-info-circle-fill" aria-hidden="true"></i> <span></span>' +
         '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+    alertDiv.querySelector("span").textContent = message;
     container.appendChild(alertDiv);
 
     setTimeout(function () {

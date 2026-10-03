@@ -6,38 +6,39 @@
     <div class="qorvli-auth-card">
         <div class="text-center mb-4">
             <img src="{% static 'images/logo-full.svg' %}" alt="QORVLI" class="qorvli-auth-logo-img">
+            <h1 class="visually-hidden">Create an account</h1>
             <p class="qorvli-auth-subtitle">Create your account and start connecting.</p>
         </div>
         <form method="post" novalidate>
             {% csrf_token %}
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">First name</label>
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First name</label>
                     {{ form.first_name }}
                     {% for error in form.first_name.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Last name</label>
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last name</label>
                     {{ form.last_name }}
                     {% for error in form.last_name.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Username</label>
+                    <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
                     {{ form.username }}
                     {% for error in form.username.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Email address</label>
+                    <label for="{{ form.email.id_for_label }}" class="form-label">Email address</label>
                     {{ form.email }}
                     {% for error in form.email.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Password</label>
+                    <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
                     {{ form.password1 }}
                     {% for error in form.password1.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Confirm password</label>
+                    <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm password</label>
                     {{ form.password2 }}
                     {% for error in form.password2.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
                 </div>

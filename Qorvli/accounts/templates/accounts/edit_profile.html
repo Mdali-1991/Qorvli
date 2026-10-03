@@ -7,26 +7,29 @@
         <form method="post" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
             <div class="mb-3 text-center">
-                <img src="{{ user.profile_picture_url }}" class="qorvli-profile-avatar-preview mb-2" alt="Current picture">
-                <label class="form-label d-block">Profile Picture</label>
+                <img src="{{ user.profile_picture_url }}" class="qorvli-profile-avatar-preview mb-2" alt="Your current profile picture">
+                <label for="{{ form.profile_picture.id_for_label }}" class="form-label d-block">Profile Picture</label>
                 {{ form.profile_picture }}
                 {% for error in form.profile_picture.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
             </div>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">First name</label>
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First name</label>
                     {{ form.first_name }}
+                    {% for error in form.first_name.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">Last name</label>
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last name</label>
                     {{ form.last_name }}
+                    {% for error in form.last_name.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Location</label>
+                    <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
                     {{ form.location }}
+                    {% for error in form.location.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
                 </div>
                 <div class="col-12">
-                    <label class="form-label">Bio</label>
+                    <label for="{{ form.bio.id_for_label }}" class="form-label">Bio</label>
                     {{ form.bio }}
                     {% for error in form.bio.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
                 </div>

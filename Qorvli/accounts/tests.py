@@ -65,10 +65,32 @@ class LoginLogoutTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Invalid username or password")
 
-    def test_logout_requires_login_first(self):
+    def test_login_ignores_external_next_url(self):
+        response = self.client.post(
+            reverse("accounts:login") + "?next=https://evil.example.com/",
+            {"username": "loginuser", "password": "pass12345"},
+        )
+        self.assertRedirects(response, reverse("posts:feed"))
+
+    def test_login_follows_internal_next_url(self):
+        target = reverse("accounts:profile", kwargs={"username": "loginuser"})
+        response = self.client.post(
+            reverse("accounts:login") + "?next=" + target,
+            {"username": "loginuser", "password": "pass12345"},
+        )
+        self.assertRedirects(response, target)
+
+    def test_logout_logs_user_out(self):
+        self.client.login(username="loginuser", password="pass12345")
+        response = self.client.post(reverse("accounts:logout"))
+        self.assertRedirects(response, reverse("accounts:login"))
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_logout_rejects_get(self):
         self.client.login(username="loginuser", password="pass12345")
         response = self.client.get(reverse("accounts:logout"))
-        self.assertRedirects(response, reverse("accounts:login"))
+        self.assertEqual(response.status_code, 405)
+        self.assertIn("_auth_user_id", self.client.session)
 
 
 class ProfileTests(TestCase):
@@ -100,6 +122,11 @@ class ProfileTests(TestCase):
         self.assertRedirects(response, reverse("accounts:profile", kwargs={"username": "owner"}))
         self.user.refresh_from_db()
         self.assertEqual(self.user.bio, "Hello world")
+
+    def test_edit_profile_page_loads(self):
+        self.client.login(username="owner", password="pass12345")
+        response = self.client.get(reverse("accounts:edit_profile"))
+        self.assertEqual(response.status_code, 200)
 
     def test_profile_picture_fallback_url_is_generated(self):
         self.assertIn("ui-avatars.com", self.user.profile_picture_url)

@@ -14,7 +14,7 @@ class PostForm(forms.ModelForm):
                     "class": "form-control qorvli-input qorvli-textarea",
                     "rows": 3,
                     "maxlength": 2000,
-                    "placeholder": "What's happening, {{ user }}?",
+                    "placeholder": "What's happening?",
                 }
             ),
             "image": forms.ClearableFileInput(

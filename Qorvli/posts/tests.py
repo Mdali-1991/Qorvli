@@ -67,6 +67,7 @@ class PostCRUDTests(TestCase):
             reverse("posts:edit_post", kwargs={"pk": post.pk}), {"content": "Hacked"}
         )
         self.assertEqual(response.status_code, 403)
+        self.assertTemplateUsed(response, "403.html")
         post.refresh_from_db()
         self.assertEqual(post.content, "Original")
 
@@ -123,7 +124,7 @@ class CommentTests(TestCase):
 
     def test_unrelated_user_cannot_delete_comment(self):
         comment = Comment.objects.create(post=self.post, author=self.commenter, content="Hi")
-        stranger = User.objects.create_user(username="stranger", password="pass12345")
+        User.objects.create_user(username="stranger", password="pass12345")
         self.client.login(username="stranger", password="pass12345")
         response = self.client.post(reverse("posts:delete_comment", kwargs={"pk": comment.pk}))
         self.assertEqual(response.status_code, 403)

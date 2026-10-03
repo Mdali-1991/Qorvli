@@ -49,7 +49,7 @@ criteria for this unit are assessing.
 | Like / unlike a post via AJAX (no page reload) | `posts` app, `main.js` |
 | Search posts by content or author | `posts` app |
 | Pagination of the feed | `posts` app |
-| Custom 404 / 500 error pages | `templates/` |
+| Custom 403 / 404 / 500 error pages | `templates/`, `qorvli_project/views.py` |
 | Flash messages for every user action (success/error/info) | `base.html` |
 
 ---
@@ -67,7 +67,7 @@ erDiagram
     POST ||--o{ LIKE : has
 
     USER {
-        int id PK
+        bigint id PK
         string username
         string email
         string first_name
@@ -78,24 +78,24 @@ erDiagram
         datetime date_joined
     }
     POST {
-        int id PK
-        int author_id FK
+        bigint id PK
+        bigint author_id FK
         text content
         image image
         datetime created_at
         datetime updated_at
     }
     COMMENT {
-        int id PK
-        int post_id FK
-        int author_id FK
+        bigint id PK
+        bigint post_id FK
+        bigint author_id FK
         string content
         datetime created_at
     }
     LIKE {
-        int id PK
-        int post_id FK
-        int user_id FK
+        bigint id PK
+        bigint post_id FK
+        bigint user_id FK
         datetime created_at
     }
 ```
@@ -151,7 +151,12 @@ Design decisions driven by UX/accessibility principles:
   comment-toggle's `aria-expanded` state is kept in sync with the collapse
   animation, and flash messages are announced via `aria-live="polite"`.
 - **No dead ends:** unknown URLs are handled by a custom, on-brand 404 page
-  rather than Django's default debug page.
+  rather than Django's default debug page, and attempts to change another
+  user's content get a custom 403 page.
+- **Forms:** every input has a programmatically associated `<label>`
+  (visually hidden where the design shows only a placeholder), each page has
+  a single `<h1>`, and delete-confirmation modals are labelled with
+  `aria-labelledby`.
 
 ---
 
@@ -173,7 +178,15 @@ Design decisions driven by UX/accessibility principles:
 - **Object-level permission checks** are enforced in the view layer, not
   just hidden in the template: only a post's author can edit/delete it, and
   only a comment's author *or* the post's author can delete a comment
-  (verified in `posts/tests.py`).
+  (verified in `posts/tests.py`). Denied requests raise `PermissionDenied`,
+  which renders the custom `403.html` page.
+- The login view only follows a `?next=` URL if it points back to this site
+  (`url_has_allowed_host_and_scheme`), preventing open-redirect phishing.
+- Logout only accepts `POST` (with a CSRF token), so another site cannot log
+  a user out with a hidden link or image.
+- `SECURE_HSTS_SECONDS` (default 1 hour, configurable) and
+  `SECURE_PROXY_SSL_HEADER` are set in production so HTTPS is enforced
+  correctly behind Heroku's router.
 - Passwords are validated with Django's built-in password validators
   (minimum length, similarity to user attributes, common-password and
   fully-numeric checks) and stored using Django's salted-hash algorithm —
@@ -274,7 +287,16 @@ TESTING.md           # Manual + automated testing procedure and results
 - Built with [Django](https://www.djangoproject.com/) and
   [Bootstrap 5](https://getbootstrap.com/) (loaded via CDN, see
   `templates/base.html`) plus [Bootstrap Icons](https://icons.getbootstrap.com/).
+- Fonts: [Poppins and Inter](https://fonts.google.com/) via Google Fonts
+  (`templates/base.html`).
 - Fallback avatars generated via [ui-avatars.com](https://ui-avatars.com/)
   when a user has not uploaded a profile picture (`accounts/models.py`).
-- All application code (models, views, forms, templates, custom CSS/JS) was
-  written for this project; no walkthrough project code was copied.
+- `getCookie()` in `static/js/main.js` is taken from the
+  [Django CSRF documentation](https://docs.djangoproject.com/en/5.0/howto/csrf/)
+  (credited in a comment above the function).
+- Image hosting in production: [Cloudinary](https://cloudinary.com/) via
+  `django-cloudinary-storage`; static files served by
+  [WhiteNoise](https://whitenoise.readthedocs.io/).
+- Apart from the items above, all application code (models, views, forms,
+  templates, custom CSS/JS) was written for this project; no walkthrough
+  project code was copied.

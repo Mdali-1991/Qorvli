@@ -16,7 +16,7 @@ class Post(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
-        indexes = [models.Index(fields=["-created_at"])]
+        indexes = [models.Index(fields=["-created_at"], name="posts_post_created_at_idx")]
 
     def __str__(self):
         return f"Post #{self.pk} by {self.author.username}"

@@ -1,3 +1,5 @@
+from urllib.parse import quote
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.urls import reverse
@@ -28,7 +30,7 @@ class User(AbstractUser):
             return self.profile_picture.url
         return (
             "https://ui-avatars.com/api/?name="
-            + self.username
+            + quote(self.username)
             + "&background=6C5CE7&color=fff&size=256"
         )
 

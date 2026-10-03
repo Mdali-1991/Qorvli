@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+handler403 = "qorvli_project.views.custom_403"
 handler404 = "qorvli_project.views.custom_404"
 handler500 = "qorvli_project.views.custom_500"
 

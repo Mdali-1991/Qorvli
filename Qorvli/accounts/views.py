@@ -1,11 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LoginView
 from django.db.models import Exists, OuterRef
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.views.decorators.http import require_POST
+from django.views.generic import CreateView
 
 from posts.models import Post, Like
 from .forms import SignUpForm, LoginForm, ProfileUpdateForm
@@ -43,8 +44,16 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, f"Welcome back, {user.first_name or user.username}!")
+                # Only follow ?next= if it points back to this site,
+                # otherwise it could be used as an open redirect.
                 next_url = request.GET.get("next")
-                return redirect(next_url or "posts:feed")
+                if next_url and url_has_allowed_host_and_scheme(
+                    next_url,
+                    allowed_hosts={request.get_host()},
+                    require_https=request.is_secure(),
+                ):
+                    return redirect(next_url)
+                return redirect("posts:feed")
             messages.error(request, "Invalid username or password.")
         else:
             messages.error(request, "Please correct the errors below.")
@@ -55,6 +64,7 @@ def login_view(request):
 
 
 @login_required
+@require_POST
 def logout_view(request):
     logout(request)
     messages.info(request, "You have been logged out. See you soon!")
