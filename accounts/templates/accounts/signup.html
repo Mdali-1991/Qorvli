@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{# Account registration form. #}
+{% load static %}
+{% block title %}Sign Up | QORVLI{% endblock %}
+{% block content %}
+<div class="qorvli-auth-wrapper">
+    <div class="qorvli-auth-card">
+        <div class="text-center mb-4">
+            <img src="{% static 'images/logo-full.svg' %}" alt="QORVLI" class="qorvli-auth-logo-img">
+            <h1 class="visually-hidden">Create an account</h1>
+            <p class="qorvli-auth-subtitle">Create your account and start connecting.</p>
+        </div>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="{{ form.first_name.id_for_label }}" class="form-label">First name</label>
+                    {{ form.first_name }}
+                    {% if form.first_name.help_text %}<div id="{{ form.first_name.auto_id }}_helptext" class="qorvli-help-text">{{ form.first_name.help_text|safe }}</div>{% endif %}
+                    {% if form.first_name.errors %}<div id="{{ form.first_name.auto_id }}_error" class="qorvli-field-error">{{ form.first_name.errors|join:" " }}</div>{% endif %}
+                </div>
+                <div class="col-md-6">
+                    <label for="{{ form.last_name.id_for_label }}" class="form-label">Last name</label>
+                    {{ form.last_name }}
+                    {% if form.last_name.help_text %}<div id="{{ form.last_name.auto_id }}_helptext" class="qorvli-help-text">{{ form.last_name.help_text|safe }}</div>{% endif %}
+                    {% if form.last_name.errors %}<div id="{{ form.last_name.auto_id }}_error" class="qorvli-field-error">{{ form.last_name.errors|join:" " }}</div>{% endif %}
+                </div>
+                <div class="col-12">
+                    <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                    {{ form.username }}
+                    {% if form.username.help_text %}<div id="{{ form.username.auto_id }}_helptext" class="qorvli-help-text">{{ form.username.help_text|safe }}</div>{% endif %}
+                    {% if form.username.errors %}<div id="{{ form.username.auto_id }}_error" class="qorvli-field-error">{{ form.username.errors|join:" " }}</div>{% endif %}
+                </div>
+                <div class="col-12">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">Email address</label>
+                    {{ form.email }}
+                    {% if form.email.help_text %}<div id="{{ form.email.auto_id }}_helptext" class="qorvli-help-text">{{ form.email.help_text|safe }}</div>{% endif %}
+                    {% if form.email.errors %}<div id="{{ form.email.auto_id }}_error" class="qorvli-field-error">{{ form.email.errors|join:" " }}</div>{% endif %}
+                </div>
+                <div class="col-12">
+                    <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+                    {{ form.password1 }}
+                    {% if form.password1.help_text %}<div id="{{ form.password1.auto_id }}_helptext" class="qorvli-help-text">{{ form.password1.help_text|safe }}</div>{% endif %}
+                    {% if form.password1.errors %}<div id="{{ form.password1.auto_id }}_error" class="qorvli-field-error">{{ form.password1.errors|join:" " }}</div>{% endif %}
+                </div>
+                <div class="col-12">
+                    <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm password</label>
+                    {{ form.password2 }}
+                    {% if form.password2.help_text %}<div id="{{ form.password2.auto_id }}_helptext" class="qorvli-help-text">{{ form.password2.help_text|safe }}</div>{% endif %}
+                    {% if form.password2.errors %}<div id="{{ form.password2.auto_id }}_error" class="qorvli-field-error">{{ form.password2.errors|join:" " }}</div>{% endif %}
+                </div>
+            </div>
+            <button type="submit" class="btn qorvli-btn-primary w-100 mt-4">Create Account</button>
+        </form>
+        <p class="text-center mt-4 qorvli-auth-footer">
+            Already have an account? <a href="{% url 'accounts:login' %}">Sign in</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

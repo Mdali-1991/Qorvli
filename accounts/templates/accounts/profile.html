@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{# A user's public profile and their posts. #}
+{% load static %}
+{% block title %}{{ profile_user.username }} | QORVLI{% endblock %}
+{% block content %}
+<div class="qorvli-profile-banner" aria-hidden="true">
+    <div class="qorvli-profile-banner-overlay"></div>
+</div>
+
+<div class="qorvli-profile-header">
+    <img src="{{ profile_user.profile_picture_url }}" alt="{{ profile_user.username }}'s profile picture" class="qorvli-profile-avatar">
+    <div class="qorvli-profile-info">
+        <h1 class="h2">{{ profile_user.get_full_name|default:profile_user.username }}</h1>
+        <p class="qorvli-profile-username">@{{ profile_user.username }}</p>
+        {% if profile_user.bio %}<p class="qorvli-profile-bio">{{ profile_user.bio }}</p>{% endif %}
+        <div class="qorvli-profile-meta">
+            {% if profile_user.location %}<span><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> {{ profile_user.location }}</span>{% endif %}
+            <span><i class="bi bi-calendar3" aria-hidden="true"></i> Joined {{ profile_user.date_joined|date:"F Y" }}</span>
+            <span><i class="bi bi-grid-fill" aria-hidden="true"></i> {{ profile_user.post_count }} post{{ profile_user.post_count|pluralize }}</span>
+        </div>
+    </div>
+    {% if is_own_profile %}
+    <a href="{% url 'accounts:edit_profile' %}" class="btn qorvli-btn-outline">
+        <i class="bi bi-pencil-square" aria-hidden="true"></i> Edit Profile
+    </a>
+    {% endif %}
+</div>
+
+<div class="qorvli-feed mt-4">
+    {% for post in posts %}
+    <article class="qorvli-card qorvli-post-card" id="post-{{ post.id }}">
+        <div class="qorvli-post-header">
+            <img src="{{ post.author.profile_picture_url }}" class="qorvli-avatar-sm" alt="">
+            <div>
+                <h2 class="qorvli-post-author">{{ post.author.get_full_name|default:post.author.username }}</h2>
+                <div class="qorvli-post-meta">@{{ post.author.username }} &middot; {{ post.created_at|timesince }} ago</div>
+            </div>
+        </div>
+        <p class="qorvli-post-content">{{ post.content|linebreaksbr }}</p>
+        {% if post.image %}
+        <img src="{{ post.image.url }}" class="qorvli-post-image" alt="Image attached to {{ post.author.username }}'s post" loading="lazy">
+        {% endif %}
+        <div class="qorvli-post-actions">
+            <button type="button" class="qorvli-like-btn {% if post.is_liked %}liked{% endif %}" data-post-id="{{ post.id }}" data-url="{% url 'posts:toggle_like' pk=post.id %}"
+                    aria-pressed="{% if post.is_liked %}true{% else %}false{% endif %}"
+                    aria-label="{% if post.is_liked %}Unlike this post{% else %}Like this post{% endif %}">
+                <i class="bi {% if post.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}" aria-hidden="true"></i>
+                <span class="qorvli-like-count">{{ post.like_count }}</span>
+            </button>
+            <span class="qorvli-comment-count"><i class="bi bi-chat-fill" aria-hidden="true"></i> {{ post.comment_count }} comment{{ post.comment_count|pluralize }}</span>
+        </div>
+    </article>
+    {% empty %}
+    <div class="qorvli-empty-state">
+        <i class="bi bi-inbox" aria-hidden="true"></i>
+        <p>No posts yet.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

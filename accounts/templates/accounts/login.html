@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{# Sign-in form. #}
+{% load static %}
+{% block title %}Login | QORVLI{% endblock %}
+{% block content %}
+<div class="qorvli-auth-wrapper">
+    <div class="qorvli-auth-card">
+        <div class="text-center mb-4">
+            <img src="{% static 'images/logo-full.svg' %}" alt="QORVLI" class="qorvli-auth-logo-img">
+            <h1 class="visually-hidden">Sign in</h1>
+            <p class="qorvli-auth-subtitle">Sign in to continue to QORVLI.</p>
+        </div>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                {{ form.username }}
+                {% if form.username.help_text %}<div id="{{ form.username.auto_id }}_helptext" class="qorvli-help-text">{{ form.username.help_text|safe }}</div>{% endif %}
+                    {% if form.username.errors %}<div id="{{ form.username.auto_id }}_error" class="qorvli-field-error">{{ form.username.errors|join:" " }}</div>{% endif %}
+            </div>
+            <div class="mb-3">
+                <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                {{ form.password }}
+                {% if form.password.help_text %}<div id="{{ form.password.auto_id }}_helptext" class="qorvli-help-text">{{ form.password.help_text|safe }}</div>{% endif %}
+                    {% if form.password.errors %}<div id="{{ form.password.auto_id }}_error" class="qorvli-field-error">{{ form.password.errors|join:" " }}</div>{% endif %}
+            </div>
+            <button type="submit" class="btn qorvli-btn-primary w-100 mt-2">Sign In</button>
+        </form>
+        <p class="text-center mt-4 qorvli-auth-footer">
+            Don't have an account? <a href="{% url 'accounts:signup' %}">Create one</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
