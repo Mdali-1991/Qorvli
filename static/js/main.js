@@ -7,7 +7,7 @@
  * getCookie() is taken from the Django documentation, "Cross Site Request
  * Forgery protection - Acquiring the token if CSRF_USE_SESSIONS and
  * CSRF_COOKIE_HTTPONLY are False":
- * https://docs.djangoproject.com/en/5.0/howto/csrf/#acquiring-the-token-if-csrf-use-sessions-and-csrf-cookie-httponly-are-false
+ * https://docs.djangoproject.com/en/5.2/howto/csrf/#acquiring-the-token-if-csrf-use-sessions-and-csrf-cookie-httponly-are-false
  */
 function getCookie(name) {
     let cookieValue = null;

@@ -375,7 +375,7 @@ Migrations run automatically in the `release` phase, so no manual
 - Fallback avatars generated via [ui-avatars.com](https://ui-avatars.com/)
   when a user has not uploaded a profile picture (`accounts/models.py`).
 - `getCookie()` in `static/js/main.js` is taken from the
-  [Django CSRF documentation](https://docs.djangoproject.com/en/5.0/howto/csrf/)
+  [Django CSRF documentation](https://docs.djangoproject.com/en/5.2/howto/csrf/)
   (credited in a comment above the function).
 - Image hosting in production: [Cloudinary](https://cloudinary.com/) via
   `django-cloudinary-storage`; static files served by
