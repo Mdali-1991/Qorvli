@@ -67,6 +67,7 @@ DATABASES = {
     "default": dj_database_url.config(
         default=env("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
         conn_max_age=600,
+        conn_health_checks=True,
     )
 }
 
@@ -136,4 +137,8 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=3600)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # HSTS preload is a near-permanent commitment for a whole domain and is
+    # not appropriate for a *.herokuapp.com address, so it is deliberately off.
+    SILENCED_SYSTEM_CHECKS = ["security.W021"]
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

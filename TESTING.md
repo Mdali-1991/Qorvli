@@ -10,10 +10,13 @@ Automated tests live in `accounts/tests.py` and `posts/tests.py` and cover
 authentication, permissions and CRUD behaviour — the parts of the app where a
 regression would be easy to introduce and hard to notice by eye.
 
-Run them with:
+Run them from the repository root (a `.env` with at least `SECRET_KEY` is
+required, see `README.md` §7):
 
 ```bash
 python manage.py test
+flake8 .
+python manage.py makemigrations --check --dry-run
 ```
 
 | App | What is covered |
@@ -24,6 +27,18 @@ python manage.py test
 31 tests, all passing (`python manage.py test`). `flake8` and `pycodestyle`
 report no issues with the settings in `setup.cfg`, and
 `python manage.py makemigrations --check` reports no pending model changes.
+
+### Production-configuration check
+
+Before deploying, the app was run locally with production settings
+(`DEBUG=False`, `CLOUDINARY_URL` set) to mirror Heroku:
+
+| Check | Command | Result |
+|---|---|---|
+| Django deployment checklist | `python manage.py check --deploy` | No issues (HSTS preload is deliberately off for a `herokuapp.com` domain and that check is silenced in `settings.py`) |
+| Static files build | `python manage.py collectstatic --noinput` | 140 files copied, hashed manifest generated |
+| Migrations | `python manage.py migrate` | All migrations applied |
+| Production server | `gunicorn qorvli_project.wsgi` | Login page 200, `/static/css/style.css` 200 via WhiteNoise, unknown URL returns the custom 404 |
 
 ## 2. Manual test procedure
 
@@ -79,5 +94,19 @@ Chrome (DevTools device emulation) and keyboard-only navigation.
 | The photo input was `display: none`, so keyboard users could not attach an image; picking a file wrote the filename into the icon element. | Test 24 | Input is now visually hidden but focusable, with a focus ring on its label; the filename goes into a dedicated `<span>`. |
 | The like button's `aria-pressed` / `aria-label` didn't change after an AJAX toggle. | Test 25 | `main.js` updates both attributes from the JSON response. |
 | `makemigrations --check` found pending changes (primary-key type on `User`, index name on `Post`). | Code review | Added `accounts/migrations/0002_alter_user_id.py`; gave the `Post` index an explicit name matching the existing migration. |
+
+| Heroku could not detect the app because `Procfile` and `requirements.txt` were inside a `Qorvli/` subfolder rather than the repository root. | Deployment review | Moved the whole project to the repository root and added `.python-version` (3.11). |
+
+## 4. Validation
+
+Fill in after deployment, with screenshots in `docs/`:
+
+| Tool | Pages / files | Result |
+|---|---|---|
+| [W3C HTML validator](https://validator.w3.org/) (check by URI, or paste "view source" for logged-in pages) | Login, Sign up, Feed, Profile, Edit profile, Edit post, 404 | _to record_ |
+| [W3C CSS validator (Jigsaw)](https://jigsaw.w3.org/css-validator/) | `static/css/style.css` | _to record_ |
+| [JSHint](https://jshint.com/) (`esversion: 6`) | `static/js/main.js` | _to record_ |
+| [CI Python Linter](https://pep8ci.herokuapp.com/) / `flake8` | All `.py` files | `flake8 .`: no issues |
+| Lighthouse (Chrome DevTools) | Feed, Profile (desktop + mobile) | _to record_ |
 
 No known bugs remain unfixed at the time of submission.

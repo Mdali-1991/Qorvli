@@ -6,7 +6,7 @@ can create an account, build a profile, publish posts with images, like and
 comment on other users' posts, and search the feed — all backed by a
 relational database with full CRUD functionality.
 
-Live demo: _add your deployed Heroku/Render URL here once deployed_
+Live demo: _add your deployed Heroku URL here once deployed_
 
 ---
 
@@ -199,11 +199,12 @@ Design decisions driven by UX/accessibility principles:
 Full testing procedure, automated test coverage and a log of bugs found and
 fixed during development is documented in [`TESTING.md`](TESTING.md).
 
-Quick start:
+Quick start (from the repository root, with `SECRET_KEY` set in `.env`):
 
 ```bash
-python manage.py test
-pycodestyle .        # Python style, configured in setup.cfg
+python manage.py test                      # 31 automated tests
+flake8 .                                   # PEP8 + lint, configured in setup.cfg
+python manage.py makemigrations --check    # confirms no unapplied model changes
 ```
 
 **Code style:** Python follows PEP8 with one explicit exception: the maximum
@@ -214,70 +215,152 @@ auto-generated `migrations/` are excluded.
 
 ## 7. Local setup
 
+Requirements: Python 3.11 (pinned in `.python-version`), Git, and optionally
+PostgreSQL (SQLite is used automatically if `DATABASE_URL` is not set).
+
 ```bash
+git clone https://github.com/mdali-1991/qorvli.git
+cd qorvli
+
 python -m venv venv
 source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
-cp .env.example .env            # then edit .env with your own SECRET_KEY / DATABASE_URL
+cp .env.example .env            # Windows: copy .env.example .env
+```
 
-# Create the Postgres database (adjust to your local Postgres setup)
-createdb qorvli_db
+Generate a secret key and paste it into `.env` as `SECRET_KEY=...`:
 
+```bash
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+```
+
+For local development set `DEBUG=True` in `.env`. Either leave
+`DATABASE_URL` empty/removed to use SQLite, or point it at a local Postgres
+database (`createdb qorvli_db`). Then:
+
+```bash
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 ```
 
 Visit `http://127.0.0.1:8000/accounts/signup/` to create an account, then
-`http://127.0.0.1:8000/` for the feed.
+`http://127.0.0.1:8000/` for the feed and `http://127.0.0.1:8000/admin/` for
+the Django admin.
 
 Media (uploaded images) are saved to the local `media/` folder in
 development. In production the filesystem is ephemeral, so set the
 `CLOUDINARY_URL` environment variable (free Cloudinary account) and uploads
 are stored there instead (see `qorvli_project/settings.py`).
 
+### Environment variables
+
+| Variable | Required | Example / default | Purpose |
+|---|---|---|---|
+| `SECRET_KEY` | Yes | long random string | Django cryptographic signing. The app refuses to start without it. |
+| `DEBUG` | No | `False` (default) | Set `True` only for local development. |
+| `ALLOWED_HOSTS` | In production | `your-app.herokuapp.com` | Comma-separated host names the app will serve. |
+| `CSRF_TRUSTED_ORIGINS` | In production | `https://your-app.herokuapp.com` | Origins allowed to submit forms over HTTPS. |
+| `DATABASE_URL` | In production | set automatically by Heroku Postgres | Database connection; falls back to SQLite locally. |
+| `CLOUDINARY_URL` | In production | `cloudinary://KEY:SECRET@CLOUD_NAME` | Stores uploaded images on Cloudinary. |
+| `SECURE_HSTS_SECONDS` | No | `3600` | HSTS max-age when `DEBUG=False`. |
+| `SECURE_SSL_REDIRECT` | No | `True` | Redirect HTTP to HTTPS when `DEBUG=False`. |
+
+None of these values are committed: `.env` is listed in `.gitignore`, and
+`.env.example` contains placeholders only.
+
 ---
 
 ## 8. Deploying to Heroku
 
+The repository root contains everything Heroku needs to detect and run the
+app:
+
+| File | Role |
+|---|---|
+| `requirements.txt` | Tells Heroku this is a Python app and lists the dependencies. |
+| `.python-version` | Pins Python 3.11. |
+| `Procfile` | `release: python manage.py migrate` runs migrations on every deploy; `web: gunicorn qorvli_project.wsgi` starts the server. |
+| `STATIC_ROOT` in `settings.py` | Lets the Python buildpack run `collectstatic` automatically during the build; WhiteNoise then serves the hashed files. |
+
+### Option A: Heroku dashboard (GitHub integration)
+
+1. Create a free [Cloudinary](https://cloudinary.com/) account and copy the
+   **API environment variable** (`cloudinary://...`) from its dashboard.
+2. In the [Heroku dashboard](https://dashboard.heroku.com/), click
+   **New → Create new app**, choose a name and region.
+3. **Resources** tab: add the **Heroku Postgres** add-on. This sets
+   `DATABASE_URL` for you.
+4. **Settings → Reveal Config Vars**: add `SECRET_KEY`, `DEBUG=False`,
+   `CLOUDINARY_URL`, `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`. Use the app
+   domain shown under **Settings → Domains** (for example
+   `your-app-1a2b3c4d5e6f.herokuapp.com`) and prefix it with `https://` for
+   `CSRF_TRUSTED_ORIGINS`.
+5. **Deploy** tab: choose **GitHub**, connect this repository, select the
+   branch, and click **Deploy Branch** (optionally enable automatic deploys).
+6. Watch the build log: dependencies install, `collectstatic` runs, and the
+   `release` phase applies migrations.
+7. Create an admin account: **More → Run console** →
+   `python manage.py createsuperuser`.
+8. Click **Open app**.
+
+### Option B: Heroku CLI
+
 ```bash
 heroku login
-heroku create qorvli-app
+heroku create your-app-name
 heroku addons:create heroku-postgresql:essential-0
-heroku config:set SECRET_KEY="your-production-secret-key"
+heroku config:set SECRET_KEY="$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')"
 heroku config:set DEBUG=False
 heroku config:set CLOUDINARY_URL="cloudinary://API_KEY:API_SECRET@CLOUD_NAME"
-heroku config:set ALLOWED_HOSTS=qorvli-app.herokuapp.com
-heroku config:set CSRF_TRUSTED_ORIGINS=https://qorvli-app.herokuapp.com
+heroku domains     # shows the exact your-app-name-xxxx.herokuapp.com host
+heroku config:set ALLOWED_HOSTS=your-app-name-xxxx.herokuapp.com
+heroku config:set CSRF_TRUSTED_ORIGINS=https://your-app-name-xxxx.herokuapp.com
 
-git push heroku main
+git push heroku main            # or: git push heroku <your-branch>:main
 
-heroku run python manage.py migrate
 heroku run python manage.py createsuperuser
 heroku open
 ```
 
-`Procfile` already defines the `release` (runs migrations automatically on
-every deploy) and `web` (Gunicorn) processes. Static files are served via
-WhiteNoise (`STORAGES["staticfiles"]` in `settings.py`), so no extra
-buildpack configuration is needed.
+Migrations run automatically in the `release` phase, so no manual
+`migrate` step is needed.
 
-After deploying, test that the deployed version matches the development
-version (same features, same data model) — see Test #1–27 in `TESTING.md`.
+### After deploying
+
+- Confirm `DEBUG` is `False`: visiting a non-existent URL should show the
+  custom 404 page, never a Django debug page.
+- Re-run the manual tests in [`TESTING.md`](TESTING.md) (tests 1–27) against
+  the live site and record the results.
+- If the build fails with `ImproperlyConfigured: Set the SECRET_KEY
+  environment variable`, the config var was missing when `collectstatic`
+  ran; add it and redeploy.
+- `DisallowedHost` or a 400 error means `ALLOWED_HOSTS` doesn't match the
+  app domain; a CSRF 403 on form submission means `CSRF_TRUSTED_ORIGINS` is
+  missing `https://`.
 
 ---
 
 ## 9. Project structure
 
 ```
-qorvli_project/     # Django project settings, root URLs, error handlers
-accounts/            # Custom User model, signup/login/profile views
-posts/               # Post, Comment, Like models and views
-templates/           # Shared base template + 404/500 pages
-static/              # Custom CSS and JavaScript (no external local files needed)
-docs/wireframes/      # UX wireframes produced during the design phase
-TESTING.md           # Manual + automated testing procedure and results
+.
+├── .env.example          # Template for local environment variables (no real secrets)
+├── .gitignore            # Keeps .env, db.sqlite3, media/, staticfiles/ out of Git
+├── .python-version       # Python 3.11 for Heroku
+├── Procfile              # Heroku release (migrate) + web (gunicorn) processes
+├── requirements.txt      # Python dependencies
+├── setup.cfg             # flake8 / pycodestyle configuration
+├── manage.py
+├── qorvli_project/       # Settings, root URLs, 403/404/500 handlers, WSGI/ASGI
+├── accounts/             # Custom User model, signup/login/logout/profile views, tests
+├── posts/                # Post, Comment, Like models, CRUD views, tests
+├── templates/            # Shared base template + 403/404/500 pages
+├── static/               # Custom CSS, JavaScript and SVG logos
+├── docs/wireframes/      # UX wireframes produced during the design phase
+├── README.md
+└── TESTING.md            # Manual + automated testing procedure and results
 ```
 
 ---
