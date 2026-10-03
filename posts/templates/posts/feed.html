@@ -158,7 +158,11 @@
             {% empty %}
             <div class="qorvli-empty-state">
                 <i class="bi bi-inbox" aria-hidden="true"></i>
+                {% if query %}
+                <p>No posts match "{{ query }}". Try a different word or <a href="{% url 'posts:feed' %}">view all posts</a>.</p>
+                {% else %}
                 <p>No posts to show yet. Be the first to share something!</p>
+                {% endif %}
             </div>
             {% endfor %}
         </div>

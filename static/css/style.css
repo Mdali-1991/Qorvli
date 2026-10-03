@@ -414,6 +414,7 @@ a:hover > .qorvli-avatar-xs {
 /* ---------- Empty state ---------- */
 .qorvli-empty-state { text-align: center; padding: 3rem 1rem; color: var(--qorvli-text-muted); }
 .qorvli-empty-state i { font-size: 2.5rem; display: block; margin-bottom: 1rem; }
+.qorvli-empty-state a { color: var(--qorvli-secondary); font-weight: 600; }
 
 /* ---------- Modal ---------- */
 /* Bootstrap's close icon is dark by default; lighten it on the dark modal and alerts. */

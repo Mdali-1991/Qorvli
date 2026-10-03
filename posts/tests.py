@@ -39,6 +39,12 @@ class FeedTests(TestCase):
         self.assertContains(response, "Learning Django is great")
         self.assertNotContains(response, "Something unrelated")
 
+    def test_search_with_no_results_explains_why(self):
+        Post.objects.create(author=self.user, content="Hello")
+        response = self.client.get(reverse("posts:feed"), {"q": "zebra"})
+        self.assertContains(response, 'No posts match "zebra"')
+        self.assertNotContains(response, "Be the first to share something")
+
 
 class PostCRUDTests(TestCase):
     """Creating, editing and deleting posts, and ownership checks."""
