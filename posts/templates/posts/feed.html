@@ -21,7 +21,6 @@
                     <div class="flex-grow-1">
                         <label for="{{ post_form.content.id_for_label }}" class="visually-hidden">Write a new post</label>
                         {{ post_form.content }}
-                        {% for error in post_form.content.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
                     </div>
                 </div>
                 <div class="qorvli-composer-footer">
@@ -45,7 +44,7 @@
                     </a>
                     <div class="flex-grow-1">
                         <a href="{% url 'accounts:profile' username=post.author.username %}" class="qorvli-author-link">
-                            <strong>{{ post.author.get_full_name|default:post.author.username }}</strong>
+                            <h2 class="qorvli-post-author">{{ post.author.get_full_name|default:post.author.username }}</h2>
                         </a>
                         <div class="qorvli-post-meta">@{{ post.author.username }} &middot; {{ post.created_at|timesince }} ago</div>
                     </div>

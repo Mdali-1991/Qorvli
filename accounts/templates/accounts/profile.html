@@ -31,7 +31,7 @@
         <div class="qorvli-post-header">
             <img src="{{ post.author.profile_picture_url }}" class="qorvli-avatar-sm" alt="">
             <div>
-                <strong>{{ post.author.get_full_name|default:post.author.username }}</strong>
+                <h2 class="qorvli-post-author">{{ post.author.get_full_name|default:post.author.username }}</h2>
                 <div class="qorvli-post-meta">@{{ post.author.username }} &middot; {{ post.created_at|timesince }} ago</div>
             </div>
         </div>

@@ -40,6 +40,10 @@ a { text-decoration: none; }
 /* ---------- Navbar ---------- */
 .qorvli-navbar {
     background: rgba(15, 12, 41, 0.75);
+    /* backdrop-filter (CSS Filter Effects Level 2) gives the frosted-glass look and
+       keeps text readable over content scrolling under the sticky navbar. It is
+       supported by all current browsers but not yet recognised by every CSS
+       validator; see TESTING.md, "Validation". */
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--qorvli-glass-border);
@@ -358,6 +362,8 @@ a:hover > .qorvli-avatar-xs {
 .qorvli-auth-footer { color: var(--qorvli-text-muted); }
 .qorvli-auth-footer a { color: var(--qorvli-secondary); font-weight: 600; }
 .qorvli-field-error { color: #ff8787; font-size: 0.8rem; margin-top: 4px; }
+.qorvli-help-text { color: var(--qorvli-text-muted); font-size: 0.8rem; margin-top: 4px; }
+.qorvli-help-text ul { margin: 0; padding-left: 1.1rem; }
 
 /* ---------- Profile ---------- */
 .qorvli-profile-banner {
@@ -366,7 +372,7 @@ a:hover > .qorvli-avatar-xs {
     position: relative; overflow: hidden; margin-top: 1rem;
 }
 .qorvli-profile-banner-overlay {
-    position: absolute; inset: 0;
+    position: absolute; top: 0; right: 0; bottom: 0; left: 0;
     background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.25), transparent 60%);
 }
 .qorvli-profile-header {
@@ -385,6 +391,7 @@ a:hover > .qorvli-avatar-xs {
 
 /* ---------- Sidebar ---------- */
 .qorvli-sidebar-card h2 { margin-bottom: 1rem; }
+.qorvli-post-author { font-size: 1rem; font-weight: 700; margin: 0; }
 .qorvli-suggested-user { display: flex; align-items: center; padding: 0.5rem 0; color: var(--qorvli-text-light); border-radius: 10px; transition: background 0.2s ease; }
 .qorvli-suggested-user:hover { background: rgba(255,255,255,0.06); color: var(--qorvli-text-light); }
 

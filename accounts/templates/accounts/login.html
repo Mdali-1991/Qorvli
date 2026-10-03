@@ -14,12 +14,14 @@
             <div class="mb-3">
                 <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
                 {{ form.username }}
-                {% for error in form.username.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
+                {% if form.username.help_text %}<div id="{{ form.username.auto_id }}_helptext" class="qorvli-help-text">{{ form.username.help_text|safe }}</div>{% endif %}
+                    {% if form.username.errors %}<div id="{{ form.username.auto_id }}_error" class="qorvli-field-error">{{ form.username.errors|join:" " }}</div>{% endif %}
             </div>
             <div class="mb-3">
                 <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
                 {{ form.password }}
-                {% for error in form.password.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
+                {% if form.password.help_text %}<div id="{{ form.password.auto_id }}_helptext" class="qorvli-help-text">{{ form.password.help_text|safe }}</div>{% endif %}
+                    {% if form.password.errors %}<div id="{{ form.password.auto_id }}_error" class="qorvli-field-error">{{ form.password.errors|join:" " }}</div>{% endif %}
             </div>
             <button type="submit" class="btn qorvli-btn-primary w-100 mt-2">Sign In</button>
         </form>
