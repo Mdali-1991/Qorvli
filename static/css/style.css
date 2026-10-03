@@ -25,9 +25,14 @@
 
 * { box-sizing: border-box; }
 
+/* Solid fallback so text stays readable wherever the gradient doesn't paint
+   (e.g. browsers that ignore background-attachment: fixed). */
+html { background-color: var(--qorvli-bg-start); }
+
 body {
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, var(--qorvli-bg-start), var(--qorvli-bg-mid) 50%, var(--qorvli-bg-end));
+    background-color: var(--qorvli-bg-start);
+    background-image: linear-gradient(135deg, var(--qorvli-bg-start), var(--qorvli-bg-mid) 50%, var(--qorvli-bg-end));
     background-attachment: fixed;
     color: var(--qorvli-text-light);
     min-height: 100vh;
