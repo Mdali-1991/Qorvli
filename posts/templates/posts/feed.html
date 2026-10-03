@@ -9,7 +9,7 @@
 
         {% if query %}
         <div class="qorvli-search-banner">
-            <i class="bi bi-search" aria-hidden="true"></i> Results for "<strong>{{ query }}</strong>"
+            <i class="bi bi-search" aria-hidden="true"></i> <span>Results for &ldquo;<strong>{{ query }}</strong>&rdquo;</span>
             <a href="{% url 'posts:feed' %}" class="qorvli-clear-search">Clear</a>
         </div>
         {% endif %}
