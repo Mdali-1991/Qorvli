@@ -17,6 +17,8 @@ from .models import Comment, Like, Post
 
 
 class FeedTests(TestCase):
+    """The feed page: login requirement and search."""
+
     def setUp(self):
         self.user = User.objects.create_user(username="alice", password="pass12345")
         self.client.login(username="alice", password="pass12345")
@@ -39,6 +41,8 @@ class FeedTests(TestCase):
 
 
 class PostCRUDTests(TestCase):
+    """Creating, editing and deleting posts, and ownership checks."""
+
     def setUp(self):
         self.owner = User.objects.create_user(username="owner", password="pass12345")
         self.other = User.objects.create_user(username="intruder", password="pass12345")
@@ -106,6 +110,8 @@ MEDIA_TMP = tempfile.mkdtemp()
 
 @override_settings(MEDIA_ROOT=MEDIA_TMP)
 class PostImageTests(TestCase):
+    """Image uploads on posts, using a temporary media folder."""
+
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(MEDIA_TMP, ignore_errors=True)
@@ -141,6 +147,8 @@ class PostImageTests(TestCase):
 
 
 class CommentTests(TestCase):
+    """Adding comments and who may delete them."""
+
     def setUp(self):
         self.owner = User.objects.create_user(username="owner", password="pass12345")
         self.commenter = User.objects.create_user(username="commenter", password="pass12345")
@@ -192,6 +200,8 @@ class CommentTests(TestCase):
 
 
 class LikeTests(TestCase):
+    """Toggling likes via the AJAX endpoint."""
+
     def setUp(self):
         self.user = User.objects.create_user(username="liker", password="pass12345")
         self.author = User.objects.create_user(username="author", password="pass12345")

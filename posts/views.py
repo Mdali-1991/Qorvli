@@ -1,3 +1,4 @@
+"""Views for the feed and for creating, editing and deleting posts and comments."""
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
@@ -22,6 +23,7 @@ def form_error_text(form):
 @login_required
 @require_http_methods(["GET"])
 def feed_view(request):
+    """Paginated feed of all posts, optionally filtered by a search query."""
     query = request.GET.get("q", "").strip()
     posts = (
         Post.objects.select_related("author")
@@ -63,6 +65,7 @@ def feed_view(request):
 @login_required
 @require_POST
 def create_post_view(request):
+    """Publish a new post for the signed-in user."""
     form = PostForm(request.POST, request.FILES)
     if form.is_valid():
         post = form.save(commit=False)
@@ -77,6 +80,7 @@ def create_post_view(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def edit_post_view(request, pk):
+    """Edit a post. Only its author may do this."""
     post = get_object_or_404(Post, pk=pk)
     if post.author != request.user:
         raise PermissionDenied("You do not have permission to edit this post.")
@@ -97,6 +101,7 @@ def edit_post_view(request, pk):
 @login_required
 @require_POST
 def delete_post_view(request, pk):
+    """Delete a post. Only its author may do this."""
     post = get_object_or_404(Post, pk=pk)
     if post.author != request.user:
         raise PermissionDenied("You do not have permission to delete this post.")
@@ -108,6 +113,7 @@ def delete_post_view(request, pk):
 @login_required
 @require_POST
 def add_comment_view(request, pk):
+    """Add a comment to a post."""
     post = get_object_or_404(Post, pk=pk)
     form = CommentForm(request.POST)
     if form.is_valid():
@@ -124,6 +130,7 @@ def add_comment_view(request, pk):
 @login_required
 @require_POST
 def delete_comment_view(request, pk):
+    """Delete a comment. Allowed for its author or the post's author."""
     comment = get_object_or_404(Comment, pk=pk)
     if comment.author != request.user and comment.post.author != request.user:
         raise PermissionDenied("You do not have permission to delete this comment.")

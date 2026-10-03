@@ -135,6 +135,10 @@ function initSubmitSpinners() {
     });
 }
 
+/**
+ * Like/unlike a post without reloading the page. The server returns the
+ * new state as JSON; on failure the user sees an error message.
+ */
 function initLikeButtons() {
     document.querySelectorAll(".qorvli-like-btn").forEach(function (button) {
         button.addEventListener("click", function () {
@@ -189,6 +193,9 @@ function initLikeButtons() {
     });
 }
 
+/**
+ * Show or hide a post's comment panel when its comment button is clicked.
+ */
 function initCommentToggles() {
     document.querySelectorAll(".qorvli-comment-toggle").forEach(function (button) {
         button.addEventListener("click", function () {
@@ -225,6 +232,9 @@ function initCommentToggles() {
     });
 }
 
+/**
+ * Replace the composer's "Photo" label with the chosen file's name.
+ */
 function initFileLabels() {
     document.querySelectorAll(".qorvli-file-label input[type='file']").forEach(function (input) {
         input.addEventListener("change", function () {
@@ -240,6 +250,9 @@ function initFileLabels() {
     });
 }
 
+/**
+ * Fade out flash messages after six seconds.
+ */
 function initAutoDismissAlerts() {
     document.querySelectorAll(".qorvli-alert").forEach(function (alert) {
         setTimeout(function () {
@@ -260,6 +273,9 @@ function dismissAlert(alertEl) {
     }
 }
 
+/**
+ * Show a flash-style message created from JavaScript (e.g. a failed like).
+ */
 function showToast(message, type) {
     const container = document.querySelector(".qorvli-messages") || createMessagesContainer();
     const alertDiv = document.createElement("div");
@@ -276,6 +292,9 @@ function showToast(message, type) {
     }, 6000);
 }
 
+/**
+ * Create the flash message area if the page didn't render one.
+ */
 function createMessagesContainer() {
     const container = document.createElement("div");
     container.className = "qorvli-messages";

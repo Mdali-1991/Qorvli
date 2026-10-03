@@ -1,3 +1,4 @@
+"""Forms for creating and editing posts and adding comments."""
 from django import forms
 from django.core.exceptions import ValidationError
 
@@ -5,6 +6,8 @@ from .models import Post, Comment
 
 
 class PostForm(forms.ModelForm):
+    """Create or edit a post: text plus an optional image."""
+
     class Meta:
         model = Post
         fields = ("content", "image")
@@ -24,6 +27,7 @@ class PostForm(forms.ModelForm):
         }
 
     def clean_content(self):
+        """Strip whitespace and require 1-2000 characters."""
         content = self.cleaned_data.get("content", "").strip()
         if not content:
             raise ValidationError("Your post cannot be empty.")
@@ -32,6 +36,7 @@ class PostForm(forms.ModelForm):
         return content
 
     def clean_image(self):
+        """Reject images larger than 8MB."""
         image = self.cleaned_data.get("image")
         if image and hasattr(image, "size"):
             max_size_mb = 8
@@ -41,6 +46,8 @@ class PostForm(forms.ModelForm):
 
 
 class CommentForm(forms.ModelForm):
+    """Single-line comment on a post."""
+
     class Meta:
         model = Comment
         fields = ("content",)
@@ -57,6 +64,7 @@ class CommentForm(forms.ModelForm):
         }
 
     def clean_content(self):
+        """Strip whitespace and reject blank comments."""
         content = self.cleaned_data.get("content", "").strip()
         if not content:
             raise ValidationError("Comment cannot be empty.")

@@ -1,3 +1,4 @@
+"""Data model for QORVLI users."""
 from urllib.parse import quote
 
 from django.contrib.auth.models import AbstractUser
@@ -19,13 +20,16 @@ class User(AbstractUser):
         ordering = ["-date_joined"]
 
     def __str__(self):
+        """Show the username in the admin and shell."""
         return self.username
 
     def get_absolute_url(self):
+        """URL of this user's public profile page."""
         return reverse("accounts:profile", kwargs={"username": self.username})
 
     @property
     def profile_picture_url(self):
+        """Uploaded picture if there is one, otherwise a generated initials avatar."""
         if self.profile_picture and hasattr(self.profile_picture, "url"):
             return self.profile_picture.url
         return (
@@ -36,4 +40,5 @@ class User(AbstractUser):
 
     @property
     def post_count(self):
+        """Number of posts this user has published."""
         return self.posts.count()

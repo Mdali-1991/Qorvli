@@ -1,3 +1,4 @@
+"""Forms for signing up, logging in and editing a user profile."""
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
@@ -10,6 +11,8 @@ RESERVED_USERNAMES = {"edit"}
 
 
 class SignUpForm(UserCreationForm):
+    """Registration form: username, full name, unique email and password."""
+
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(
@@ -41,6 +44,7 @@ class SignUpForm(UserCreationForm):
         }
 
     def __init__(self, *args, **kwargs):
+        """Apply the site's input styling to the inherited password fields."""
         super().__init__(*args, **kwargs)
         self.fields["password1"].widget.attrs.update(
             {"class": "form-control qorvli-input", "placeholder": "Password"}
@@ -50,18 +54,21 @@ class SignUpForm(UserCreationForm):
         )
 
     def clean_username(self):
+        """Reject usernames that collide with fixed profile URLs."""
         username = super().clean_username()
         if username.lower() in RESERVED_USERNAMES:
             raise ValidationError("This username is reserved. Please choose another.")
         return username
 
     def clean_email(self):
+        """Normalise the email and make sure no other account uses it."""
         email = self.cleaned_data.get("email", "").lower().strip()
         if User.objects.filter(email__iexact=email).exists():
             raise ValidationError("An account with this email already exists.")
         return email
 
     def save(self, commit=True):
+        """Copy the extra profile fields onto the new user before saving."""
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
         user.first_name = self.cleaned_data["first_name"]
@@ -72,6 +79,8 @@ class SignUpForm(UserCreationForm):
 
 
 class LoginForm(forms.Form):
+    """Username and password form; authentication happens in the view."""
+
     username = forms.CharField(
         widget=forms.TextInput(
             attrs={
@@ -89,6 +98,8 @@ class LoginForm(forms.Form):
 
 
 class ProfileUpdateForm(forms.ModelForm):
+    """Lets a user edit their own name, bio, location and picture."""
+
     class Meta:
         model = User
         fields = ("first_name", "last_name", "bio", "location", "profile_picture")
@@ -112,12 +123,14 @@ class ProfileUpdateForm(forms.ModelForm):
         }
 
     def clean_bio(self):
+        """Keep the bio within 280 characters."""
         bio = self.cleaned_data.get("bio", "")
         if len(bio) > 280:
             raise ValidationError("Bio cannot exceed 280 characters.")
         return bio
 
     def clean_profile_picture(self):
+        """Reject profile pictures larger than 5MB."""
         picture = self.cleaned_data.get("profile_picture")
         if picture and hasattr(picture, "size"):
             max_size_mb = 5

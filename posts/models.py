@@ -1,3 +1,4 @@
+"""Data model for posts, comments and likes."""
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
@@ -19,17 +20,21 @@ class Post(models.Model):
         indexes = [models.Index(fields=["-created_at"], name="posts_post_created_at_idx")]
 
     def __str__(self):
+        """Identify the post by id and author."""
         return f"Post #{self.pk} by {self.author.username}"
 
     def get_absolute_url(self):
+        """The feed, scrolled to this post."""
         return reverse("posts:feed") + f"#post-{self.pk}"
 
     @property
     def like_count(self):
+        """Number of likes on this post."""
         return self.likes.count()
 
     @property
     def comment_count(self):
+        """Number of comments on this post."""
         return self.comments.count()
 
 
@@ -47,6 +52,7 @@ class Comment(models.Model):
         ordering = ["created_at"]
 
     def __str__(self):
+        """Identify the comment by id, author and post."""
         return f"Comment #{self.pk} by {self.author.username} on Post #{self.post_id}"
 
 
@@ -66,4 +72,5 @@ class Like(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
+        """Describe who liked which post."""
         return f"{self.user.username} likes Post #{self.post_id}"

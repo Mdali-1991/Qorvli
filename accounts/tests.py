@@ -10,6 +10,8 @@ from .models import User
 
 
 class SignUpTests(TestCase):
+    """Registration: validation, duplicates, reserved names and redirects."""
+
     def test_signup_page_loads(self):
         response = self.client.get(reverse("accounts:signup"))
         self.assertEqual(response.status_code, 200)
@@ -71,6 +73,8 @@ class SignUpTests(TestCase):
 
 
 class LoginLogoutTests(TestCase):
+    """Logging in and out, including redirect safety."""
+
     def setUp(self):
         self.user = User.objects.create_user(username="loginuser", password="pass12345")
 
@@ -116,6 +120,8 @@ class LoginLogoutTests(TestCase):
 
 
 class ProfileTests(TestCase):
+    """Viewing and editing profiles."""
+
     def setUp(self):
         self.user = User.objects.create_user(username="owner", password="pass12345")
         self.other = User.objects.create_user(username="viewer", password="pass12345")

@@ -1,3 +1,4 @@
+"""URL routes for the feed, posts, comments and likes."""
 from django.urls import path
 
 from . import views
