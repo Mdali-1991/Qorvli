@@ -1,0 +1,13 @@
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="qorvliIconTitle">
+  <title id="qorvliIconTitle">QORVLI</title>
+  <defs>
+    <linearGradient id="qorvliGradIcon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6C63FF"/>
+      <stop offset="100%" stop-color="#2FD0E0"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#qorvliGradIcon)"/>
+  <circle cx="27" cy="27" r="11" fill="none" stroke="#FFFFFF" stroke-width="6"/>
+  <line x1="35.5" y1="35.5" x2="43" y2="43" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="45.5" cy="45.5" r="4" fill="#FF6B9D"/>
+</svg>

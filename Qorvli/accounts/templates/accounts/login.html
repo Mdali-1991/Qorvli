@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Login | QORVLI{% endblock %}
+{% block content %}
+<div class="qorvli-auth-wrapper">
+    <div class="qorvli-auth-card">
+        <div class="text-center mb-4">
+            <img src="{% static 'images/logo-full.svg' %}" alt="QORVLI" class="qorvli-auth-logo-img">
+            <p class="qorvli-auth-subtitle">Sign in to continue to QORVLI.</p>
+        </div>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                {{ form.username }}
+                {% for error in form.username.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                {{ form.password }}
+                {% for error in form.password.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
+            </div>
+            <button type="submit" class="btn qorvli-btn-primary w-100 mt-2">Sign In</button>
+        </form>
+        <p class="text-center mt-4 qorvli-auth-footer">
+            Don't have an account? <a href="{% url 'accounts:signup' %}">Create one</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

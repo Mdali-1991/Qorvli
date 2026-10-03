@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile | QORVLI{% endblock %}
+{% block content %}
+<div class="qorvli-auth-wrapper">
+    <div class="qorvli-auth-card">
+        <h1 class="qorvli-auth-title text-center mb-4">Edit Your Profile</h1>
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            <div class="mb-3 text-center">
+                <img src="{{ user.profile_picture_url }}" class="qorvli-profile-avatar-preview mb-2" alt="Current picture">
+                <label class="form-label d-block">Profile Picture</label>
+                {{ form.profile_picture }}
+                {% for error in form.profile_picture.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">First name</label>
+                    {{ form.first_name }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Last name</label>
+                    {{ form.last_name }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Location</label>
+                    {{ form.location }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Bio</label>
+                    {{ form.bio }}
+                    {% for error in form.bio.errors %}<div class="qorvli-field-error">{{ error }}</div>{% endfor %}
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn qorvli-btn-primary flex-grow-1">Save Changes</button>
+                <a href="{% url 'accounts:profile' username=user.username %}" class="btn qorvli-btn-ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

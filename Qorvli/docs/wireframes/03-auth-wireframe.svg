@@ -1,0 +1,79 @@
+<svg viewBox="0 0 1280 900" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <rect width="1280" height="900" fill="#ffffff"/>
+
+  <text x="40" y="30" font-size="12" fill="#9aa0ab" letter-spacing="1">WIREFRAME — 03</text>
+  <text x="1060" y="30" font-size="12" fill="#9aa0ab" letter-spacing="1">LOGIN / SIGN UP</text>
+
+  <line x1="640" y1="60" x2="640" y2="860" stroke="#eef0f2" stroke-dasharray="6 6"/>
+
+  <!-- ================= LOGIN (left) ================= -->
+  <text x="290" y="90" font-size="13" fill="#6b7280" letter-spacing="0.5" text-anchor="middle">LOGIN</text>
+  <rect x="140" y="130" width="360" height="420" rx="14" fill="#ffffff" stroke="#d7dae0"/>
+
+  <!-- logo mark -->
+  <rect x="290" y="164" width="60" height="60" rx="16" fill="#e5e6ea" stroke="#c7cad2"/>
+  <circle cx="311" cy="185" r="11" fill="none" stroke="#9aa0ab" stroke-width="2.5"/>
+  <line x1="319" y1="193" x2="326" y2="200" stroke="#9aa0ab" stroke-width="2.5"/>
+  <text x="320" y="246" font-size="11" fill="#9aa0ab" text-anchor="middle">Sign in to continue to QORVLI</text>
+
+  <text x="172" y="284" font-size="11" fill="#6b7280">Username</text>
+  <rect x="172" y="292" width="296" height="34" rx="7" fill="#f6f7f9" stroke="#e4e6ea"/>
+
+  <text x="172" y="344" font-size="11" fill="#6b7280">Password</text>
+  <rect x="172" y="352" width="296" height="34" rx="7" fill="#f6f7f9" stroke="#e4e6ea"/>
+
+  <rect x="172" y="404" width="296" height="38" rx="19" fill="#2b2f38"/>
+  <text x="290" y="428" font-size="12" fill="#ffffff">Sign In</text>
+
+  <text x="200" y="480" font-size="11" fill="#9aa0ab">Don't have an account?</text>
+  <text x="380" y="480" font-size="11" fill="#5b4bd8" text-decoration="underline">Create one</text>
+
+  <!-- field error state callout -->
+  <rect x="172" y="352" width="296" height="34" rx="7" fill="none" stroke="none"/>
+  <text x="172" y="398" font-size="9" fill="#c0392b">▲ inline validation message shown here on error</text>
+
+  <!-- ================= SIGN UP (right) ================= -->
+  <text x="990" y="90" font-size="13" fill="#6b7280" letter-spacing="0.5" text-anchor="middle">SIGN UP</text>
+  <rect x="780" y="130" width="360" height="660" rx="14" fill="#ffffff" stroke="#d7dae0"/>
+
+  <rect x="980" y="160" width="60" height="60" rx="16" fill="#e5e6ea" stroke="#c7cad2"/>
+  <circle cx="1001" cy="181" r="11" fill="none" stroke="#9aa0ab" stroke-width="2.5"/>
+  <line x1="1009" y1="189" x2="1016" y2="196" stroke="#9aa0ab" stroke-width="2.5"/>
+  <text x="1010" y="242" font-size="11" fill="#9aa0ab" text-anchor="middle">Create your account and start connecting</text>
+
+  <!-- two-column name row -->
+  <text x="812" y="278" font-size="11" fill="#6b7280">First name</text>
+  <rect x="812" y="286" width="140" height="32" rx="7" fill="#f6f7f9" stroke="#e4e6ea"/>
+  <text x="968" y="278" font-size="11" fill="#6b7280">Last name</text>
+  <rect x="968" y="286" width="140" height="32" rx="7" fill="#f6f7f9" stroke="#e4e6ea"/>
+
+  <text x="812" y="336" font-size="11" fill="#6b7280">Username</text>
+  <rect x="812" y="344" width="296" height="32" rx="7" fill="#f6f7f9" stroke="#e4e6ea"/>
+
+  <text x="812" y="394" font-size="11" fill="#6b7280">Email address</text>
+  <rect x="812" y="402" width="296" height="32" rx="7" fill="#f6f7f9" stroke="#e4e6ea"/>
+
+  <text x="812" y="452" font-size="11" fill="#6b7280">Password</text>
+  <rect x="812" y="460" width="296" height="32" rx="7" fill="#f6f7f9" stroke="#e4e6ea"/>
+
+  <text x="812" y="510" font-size="11" fill="#6b7280">Confirm password</text>
+  <rect x="812" y="518" width="296" height="32" rx="7" fill="#f6f7f9" stroke="#e4e6ea"/>
+
+  <rect x="812" y="572" width="296" height="38" rx="19" fill="#2b2f38"/>
+  <text x="900" y="596" font-size="12" fill="#ffffff">Create Account</text>
+
+  <text x="840" y="648" font-size="11" fill="#9aa0ab">Already have an account?</text>
+  <text x="1020" y="648" font-size="11" fill="#5b4bd8" text-decoration="underline">Sign in</text>
+
+  <rect x="812" y="686" width="296" height="70" rx="8" fill="#fbfbfc" stroke="#eef0f2" stroke-dasharray="4 4"/>
+  <text x="960" y="712" font-size="10" fill="#9aa0ab" text-anchor="middle">Duplicate email / weak password /</text>
+  <text x="960" y="728" font-size="10" fill="#9aa0ab" text-anchor="middle">mismatched confirmation → inline errors</text>
+
+  <!-- shared annotations -->
+  <g font-size="11" fill="#8b6bd1">
+    <text x="140" y="620">① Centered single-column card, works down to 360px width</text>
+    <text x="140" y="640">② Logo + name only above the fold — no extra tagline clutter</text>
+    <text x="780" y="800">③ Server-side validation errors render inline, under each field</text>
+    <text x="780" y="820">④ Successful signup redirects to Login with a flash message</text>
+  </g>
+</svg>

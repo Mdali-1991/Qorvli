@@ -1,0 +1,117 @@
+<svg viewBox="0 0 1280 900" xmlns="http://www.w3.org/2000/svg" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <pattern id="imgPlaceholder" width="16" height="16" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="16" stroke="#d0d2d8" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1280" height="900" fill="#ffffff"/>
+
+  <!-- Page label -->
+  <text x="40" y="30" font-size="12" fill="#9aa0ab" letter-spacing="1">WIREFRAME — 01</text>
+  <text x="1130" y="30" font-size="12" fill="#9aa0ab" letter-spacing="1">FEED / HOME</text>
+
+  <!-- ===== Navbar ===== -->
+  <rect x="0" y="48" width="1280" height="64" fill="#ffffff" stroke="#d7dae0"/>
+  <rect x="40" y="68" width="24" height="24" rx="6" fill="#c7cad2"/>
+  <text x="74" y="86" font-size="17" font-weight="bold" fill="#2b2f38">QORVLI</text>
+
+  <rect x="420" y="66" width="440" height="28" rx="14" fill="#f1f2f5" stroke="#d7dae0"/>
+  <circle cx="438" cy="80" r="6" fill="none" stroke="#9aa0ab" stroke-width="1.5"/>
+  <line x1="443" y1="85" x2="447" y2="89" stroke="#9aa0ab" stroke-width="1.5"/>
+  <text x="460" y="84" font-size="12" fill="#9aa0ab">Search posts or people…</text>
+
+  <text x="960" y="72" font-size="11" fill="#6b7280">FEED</text>
+  <circle cx="1030" cy="80" r="13" fill="#e5e6ea" stroke="#c7cad2"/>
+  <text x="1050" y="84" font-size="12" fill="#2b2f38">username</text>
+  <rect x="1150" y="67" width="90" height="26" rx="13" fill="#ffffff" stroke="#c7cad2"/>
+  <text x="1168" y="84" font-size="11" fill="#4a4f59">Logout</text>
+
+  <!-- ===== Composer card ===== -->
+  <rect x="40" y="140" width="760" height="120" rx="10" fill="#ffffff" stroke="#d7dae0"/>
+  <circle cx="76" cy="180" r="18" fill="#e5e6ea" stroke="#c7cad2"/>
+  <rect x="108" y="164" width="640" height="34" rx="8" fill="#f6f7f9" stroke="#e4e6ea"/>
+  <text x="122" y="185" font-size="12" fill="#9aa0ab">What's happening, username?</text>
+  <line x1="40" y1="222" x2="800" y2="222" stroke="#eef0f2"/>
+  <rect x="60" y="232" width="92" height="26" rx="13" fill="#ffffff" stroke="#c7cad2"/>
+  <text x="76" y="249" font-size="11" fill="#4a4f59">📷 Photo</text>
+  <rect x="676" y="232" width="94" height="26" rx="13" fill="#2b2f38"/>
+  <text x="704" y="249" font-size="11" fill="#ffffff">Post</text>
+
+  <!-- ===== Post card 1 (with image) ===== -->
+  <rect x="40" y="280" width="760" height="320" rx="10" fill="#ffffff" stroke="#d7dae0"/>
+  <circle cx="76" cy="316" r="18" fill="#e5e6ea" stroke="#c7cad2"/>
+  <rect x="108" y="304" width="160" height="12" rx="3" fill="#3a3f49"/>
+  <rect x="108" y="322" width="110" height="10" rx="3" fill="#c7cad2"/>
+  <circle cx="756" cy="316" r="12" fill="none" stroke="#c7cad2"/>
+  <text x="751" y="321" font-size="14" fill="#9aa0ab">⋯</text>
+
+  <rect x="60" y="350" width="520" height="12" rx="3" fill="#c7cad2"/>
+  <rect x="60" y="368" width="380" height="12" rx="3" fill="#c7cad2"/>
+
+  <rect x="60" y="396" width="720" height="150" rx="8" fill="#f1f2f5" stroke="#d7dae0"/>
+  <line x1="60" y1="396" x2="780" y2="546" stroke="#d7dae0"/>
+  <line x1="780" y1="396" x2="60" y2="546" stroke="#d7dae0"/>
+  <text x="380" y="475" font-size="11" fill="#9aa0ab" text-anchor="middle">IMAGE PLACEHOLDER</text>
+
+  <line x1="60" y1="562" x2="780" y2="562" stroke="#eef0f2"/>
+  <path d="M76 588 c-8-8-20-2-20 8 c0 10 20 20 20 20 s20-10 20-20 c0-10-12-16-20-8z" fill="none" stroke="#4a4f59" stroke-width="1.5"/>
+  <text x="106" y="596" font-size="12" fill="#4a4f59">24</text>
+  <text x="150" y="596" font-size="12" fill="#4a4f59">💬 6 comments</text>
+
+  <!-- collapsed comment box -->
+  <rect x="60" y="612" width="600" height="30" rx="15" fill="#f6f7f9" stroke="#e4e6ea"/>
+  <text x="76" y="632" font-size="11" fill="#9aa0ab">Write a comment…</text>
+
+  <!-- ===== Post card 2 (text-only, condensed) ===== -->
+  <rect x="40" y="616" width="760" height="0" fill="none"/>
+  <!-- moved below composer/card1 stack continues under scroll cue -->
+  <text x="420" y="674" font-size="11" fill="#c7cad2" text-anchor="middle">— more posts continue on scroll —</text>
+
+  <!-- ===== Right sidebar ===== -->
+  <rect x="836" y="140" width="404" height="260" rx="10" fill="#ffffff" stroke="#d7dae0"/>
+  <text x="860" y="172" font-size="13" font-weight="bold" fill="#2b2f38">Suggested for you</text>
+  <line x1="836" y1="188" x2="1240" y2="188" stroke="#eef0f2"/>
+
+  <!-- suggested user rows -->
+  <g>
+    <circle cx="876" cy="220" r="14" fill="#e5e6ea" stroke="#c7cad2"/>
+    <rect x="900" y="212" width="130" height="10" rx="3" fill="#4a4f59"/>
+    <rect x="900" y="226" width="90" height="8" rx="3" fill="#c7cad2"/>
+  </g>
+  <g>
+    <circle cx="876" cy="264" r="14" fill="#e5e6ea" stroke="#c7cad2"/>
+    <rect x="900" y="256" width="130" height="10" rx="3" fill="#4a4f59"/>
+    <rect x="900" y="270" width="90" height="8" rx="3" fill="#c7cad2"/>
+  </g>
+  <g>
+    <circle cx="876" cy="308" r="14" fill="#e5e6ea" stroke="#c7cad2"/>
+    <rect x="900" y="300" width="130" height="10" rx="3" fill="#4a4f59"/>
+    <rect x="900" y="314" width="90" height="8" rx="3" fill="#c7cad2"/>
+  </g>
+  <g>
+    <circle cx="876" cy="352" r="14" fill="#e5e6ea" stroke="#c7cad2"/>
+    <rect x="900" y="344" width="130" height="10" rx="3" fill="#4a4f59"/>
+    <rect x="900" y="358" width="90" height="8" rx="3" fill="#c7cad2"/>
+  </g>
+
+  <!-- pagination -->
+  <g>
+    <rect x="300" y="700" width="44" height="30" rx="6" fill="#ffffff" stroke="#c7cad2"/>
+    <text x="312" y="720" font-size="11" fill="#4a4f59">Prev</text>
+    <rect x="356" y="700" width="60" height="30" rx="6" fill="#2b2f38"/>
+    <text x="378" y="720" font-size="11" fill="#ffffff">1 / 4</text>
+    <rect x="428" y="700" width="44" height="30" rx="6" fill="#ffffff" stroke="#c7cad2"/>
+    <text x="436" y="720" font-size="11" fill="#4a4f59">Next</text>
+  </g>
+
+  <!-- Annotation callouts -->
+  <g font-size="11" fill="#8b6bd1">
+    <text x="836" y="425">① Composer supports text + optional</text>
+    <text x="854" y="440">   image, validated client &amp; server-side</text>
+    <text x="836" y="470">② Like uses AJAX — no page reload,</text>
+    <text x="854" y="485">   state persists after refresh</text>
+    <text x="836" y="515">③ Comments collapse/expand;</text>
+    <text x="854" y="530">   owner or post-author can delete</text>
+  </g>
+</svg>
