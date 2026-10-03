@@ -26,6 +26,14 @@ function getCookie(name) {
 
 const csrftoken = getCookie("csrftoken");
 
+/**
+ * True when Bootstrap's JavaScript bundle loaded from the CDN. If the CDN is
+ * unreachable, features fall back to plain DOM behaviour instead of throwing.
+ */
+function hasBootstrap() {
+    return typeof bootstrap !== "undefined";
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     initLikeButtons();
     initCommentToggles();
@@ -33,7 +41,35 @@ document.addEventListener("DOMContentLoaded", function () {
     initAutoDismissAlerts();
     initSubmitSpinners();
     initScrollReveal();
+    initAvatarFallbacks();
 });
+
+/**
+ * Users without an uploaded picture get an avatar from the external
+ * ui-avatars.com service. If that service is unreachable the image would
+ * show as broken, so swap in a local default avatar instead.
+ */
+function initAvatarFallbacks() {
+    const fallback = document.body.getAttribute("data-default-avatar");
+    if (!fallback) return;
+
+    const avatars = document.querySelectorAll(
+        ".qorvli-nav-avatar, .qorvli-avatar-sm, .qorvli-avatar-xs, " +
+        ".qorvli-profile-avatar, .qorvli-profile-avatar-preview"
+    );
+    avatars.forEach(function (img) {
+        function useFallback() {
+            if (img.getAttribute("src") !== fallback) {
+                img.setAttribute("src", fallback);
+            }
+        }
+        img.addEventListener("error", useFallback, { once: true });
+        // The image may already have failed before this script ran.
+        if (img.complete && img.naturalWidth === 0) {
+            useFallback();
+        }
+    });
+}
 
 /**
  * Gently fades + rises each card into view as the user scrolls to it,
@@ -160,6 +196,13 @@ function initCommentToggles() {
             const target = document.querySelector(targetSelector);
             if (!target) return;
 
+            if (!hasBootstrap()) {
+                // Without Bootstrap, toggle the panel's visibility directly.
+                const isOpen = target.classList.toggle("show");
+                button.setAttribute("aria-expanded", isOpen ? "true" : "false");
+                return;
+            }
+
             const bsCollapse = bootstrap.Collapse.getOrCreateInstance(target, { toggle: false });
             bsCollapse.toggle();
 
@@ -200,12 +243,21 @@ function initFileLabels() {
 function initAutoDismissAlerts() {
     document.querySelectorAll(".qorvli-alert").forEach(function (alert) {
         setTimeout(function () {
-            const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
-            if (bsAlert) {
-                bsAlert.close();
-            }
+            dismissAlert(alert);
         }, 6000);
     });
+}
+
+/**
+ * Close a flash message with Bootstrap's fade animation, or simply remove it
+ * if Bootstrap is unavailable.
+ */
+function dismissAlert(alertEl) {
+    if (hasBootstrap()) {
+        bootstrap.Alert.getOrCreateInstance(alertEl).close();
+    } else {
+        alertEl.remove();
+    }
 }
 
 function showToast(message, type) {
@@ -220,10 +272,7 @@ function showToast(message, type) {
     container.appendChild(alertDiv);
 
     setTimeout(function () {
-        const bsAlert = bootstrap.Alert.getOrCreateInstance(alertDiv);
-        if (bsAlert) {
-            bsAlert.close();
-        }
+        dismissAlert(alertDiv);
     }, 6000);
 }
 
