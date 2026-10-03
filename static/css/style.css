@@ -381,15 +381,18 @@ a:hover > .qorvli-avatar-xs {
     background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.25), transparent 60%);
 }
 .qorvli-profile-header {
-    display: flex; align-items: flex-end; gap: 1.5rem; margin-top: -60px; padding: 0 1.5rem;
+    display: flex; align-items: flex-start; gap: 1.5rem; padding: 0 1.5rem;
     flex-wrap: wrap;
 }
+.qorvli-profile-header > .btn { align-self: center; }
+/* Only the avatar overlaps the banner; it sits above it so it isn't cropped. */
 .qorvli-profile-avatar {
+    margin-top: -60px; position: relative; z-index: 1;
     width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
     border: 5px solid var(--qorvli-bg-mid); box-shadow: var(--qorvli-shadow);
 }
 .qorvli-profile-avatar-preview { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 3px solid var(--qorvli-glass-border); }
-.qorvli-profile-info { flex-grow: 1; }
+.qorvli-profile-info { flex-grow: 1; padding-top: 0.75rem; }
 .qorvli-profile-username { color: var(--qorvli-text-muted); }
 .qorvli-profile-bio { margin-top: 0.5rem; max-width: 500px; }
 .qorvli-profile-meta { display: flex; gap: 1.2rem; flex-wrap: wrap; color: var(--qorvli-text-muted); font-size: 0.9rem; margin-top: 0.6rem; }
@@ -413,6 +416,8 @@ a:hover > .qorvli-avatar-xs {
 .qorvli-empty-state i { font-size: 2.5rem; display: block; margin-bottom: 1rem; }
 
 /* ---------- Modal ---------- */
+/* Bootstrap's close icon is dark by default; lighten it on the dark modal and alerts. */
+.qorvli-modal .btn-close, .qorvli-alert .btn-close { filter: invert(1) grayscale(100%) brightness(200%); }
 .qorvli-modal { background: #201c40; color: var(--qorvli-text-light); border-radius: 18px; border: 1px solid var(--qorvli-glass-border); }
 
 /* ---------- Pagination ---------- */
@@ -440,8 +445,7 @@ a:hover > .qorvli-avatar-xs {
 /* ---------- Responsive ---------- */
 @media (max-width: 991px) {
     .qorvli-search-form { width: 100%; margin: 1rem 0; }
-    .qorvli-profile-header { margin-top: -40px; }
-    .qorvli-profile-avatar { width: 90px; height: 90px; }
+    .qorvli-profile-avatar { width: 90px; height: 90px; margin-top: -45px; }
 }
 
 @media (max-width: 575px) {

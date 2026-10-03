@@ -19,7 +19,7 @@
 <body data-default-avatar="{% static 'images/default-avatar.svg' %}">
 
 {% if user.is_authenticated %}
-<nav class="navbar navbar-expand-lg qorvli-navbar sticky-top">
+<nav class="navbar navbar-expand-lg qorvli-navbar sticky-top" data-bs-theme="dark" aria-label="Main navigation">
     <div class="container">
         <a class="navbar-brand qorvli-brand" href="{% url 'posts:feed' %}">
             <img src="{% static 'images/logo-icon.svg' %}" alt="QORVLI" class="qorvli-brand-logo">
