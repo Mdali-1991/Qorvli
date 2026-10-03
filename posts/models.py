@@ -32,11 +32,6 @@ class Post(models.Model):
     def comment_count(self):
         return self.comments.count()
 
-    def is_liked_by(self, user):
-        if not user or not user.is_authenticated:
-            return False
-        return self.likes.filter(user=user).exists()
-
 
 class Comment(models.Model):
     """A comment left by a user on a post."""

@@ -3,8 +3,14 @@ Automated tests for the posts app (CRUD, comments, likes).
 
 Run with:  python manage.py test posts
 """
-from django.test import TestCase
+import io
+import shutil
+import tempfile
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import TestCase, override_settings
 from django.urls import reverse
+from PIL import Image
 
 from accounts.models import User
 from .models import Comment, Like, Post
@@ -39,8 +45,10 @@ class PostCRUDTests(TestCase):
 
     def test_create_post_requires_content(self):
         self.client.login(username="owner", password="pass12345")
-        response = self.client.post(reverse("posts:create_post"), {"content": ""})
-        self.assertRedirects(response, reverse("posts:feed"))
+        response = self.client.post(
+            reverse("posts:create_post"), {"content": ""}, follow=True
+        )
+        self.assertContains(response, "Your post cannot be empty.")
         self.assertEqual(Post.objects.count(), 0)
 
     def test_create_post_success(self):
@@ -56,7 +64,7 @@ class PostCRUDTests(TestCase):
         response = self.client.post(
             reverse("posts:edit_post", kwargs={"pk": post.pk}), {"content": "Updated"}
         )
-        self.assertRedirects(response, reverse("posts:feed"))
+        self.assertRedirects(response, post.get_absolute_url(), fetch_redirect_response=False)
         post.refresh_from_db()
         self.assertEqual(post.content, "Updated")
 
@@ -86,6 +94,52 @@ class PostCRUDTests(TestCase):
         self.assertTrue(Post.objects.filter(pk=post.pk).exists())
 
 
+def make_image(name="photo.png", size=(10, 10), fmt="PNG"):
+    """Build an in-memory image file for upload tests."""
+    buffer = io.BytesIO()
+    Image.new("RGB", size, "purple").save(buffer, fmt)
+    return SimpleUploadedFile(name, buffer.getvalue(), content_type=f"image/{fmt.lower()}")
+
+
+MEDIA_TMP = tempfile.mkdtemp()
+
+
+@override_settings(MEDIA_ROOT=MEDIA_TMP)
+class PostImageTests(TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(MEDIA_TMP, ignore_errors=True)
+        super().tearDownClass()
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="photographer", password="pass12345")
+        self.client.login(username="photographer", password="pass12345")
+
+    def test_post_with_valid_image_is_saved(self):
+        self.client.post(
+            reverse("posts:create_post"), {"content": "Sunset", "image": make_image()}
+        )
+        post = Post.objects.get()
+        self.assertTrue(post.image.name.startswith("post_images/"))
+
+    def test_non_image_file_is_rejected(self):
+        fake = SimpleUploadedFile("notes.png", b"not an image", content_type="image/png")
+        response = self.client.post(
+            reverse("posts:create_post"), {"content": "Oops", "image": fake}, follow=True
+        )
+        self.assertContains(response, "Could not publish your post.")
+        self.assertEqual(Post.objects.count(), 0)
+
+    def test_image_over_8mb_is_rejected(self):
+        # An uncompressed 1800x1800 BMP is roughly 9.7MB.
+        big = make_image("big.bmp", size=(1800, 1800), fmt="BMP")
+        response = self.client.post(
+            reverse("posts:create_post"), {"content": "Huge", "image": big}, follow=True
+        )
+        self.assertContains(response, "Image file too large")
+        self.assertEqual(Post.objects.count(), 0)
+
+
 class CommentTests(TestCase):
     def setUp(self):
         self.owner = User.objects.create_user(username="owner", password="pass12345")
@@ -97,7 +151,9 @@ class CommentTests(TestCase):
         response = self.client.post(
             reverse("posts:add_comment", kwargs={"pk": self.post.pk}), {"content": "Nice post!"}
         )
-        self.assertRedirects(response, reverse("posts:feed"))
+        self.assertRedirects(
+            response, self.post.get_absolute_url(), fetch_redirect_response=False
+        )
         self.assertEqual(Comment.objects.count(), 1)
 
     def test_empty_comment_is_rejected(self):
@@ -112,14 +168,18 @@ class CommentTests(TestCase):
         comment = Comment.objects.create(post=self.post, author=self.commenter, content="Hi")
         self.client.login(username="commenter", password="pass12345")
         response = self.client.post(reverse("posts:delete_comment", kwargs={"pk": comment.pk}))
-        self.assertRedirects(response, reverse("posts:feed"))
+        self.assertRedirects(
+            response, self.post.get_absolute_url(), fetch_redirect_response=False
+        )
         self.assertFalse(Comment.objects.filter(pk=comment.pk).exists())
 
     def test_post_owner_can_delete_others_comment(self):
         comment = Comment.objects.create(post=self.post, author=self.commenter, content="Hi")
         self.client.login(username="owner", password="pass12345")
         response = self.client.post(reverse("posts:delete_comment", kwargs={"pk": comment.pk}))
-        self.assertRedirects(response, reverse("posts:feed"))
+        self.assertRedirects(
+            response, self.post.get_absolute_url(), fetch_redirect_response=False
+        )
         self.assertFalse(Comment.objects.filter(pk=comment.pk).exists())
 
     def test_unrelated_user_cannot_delete_comment(self):

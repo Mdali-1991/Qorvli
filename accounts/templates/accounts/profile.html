@@ -15,7 +15,7 @@
         <div class="qorvli-profile-meta">
             {% if profile_user.location %}<span><i class="bi bi-geo-alt-fill" aria-hidden="true"></i> {{ profile_user.location }}</span>{% endif %}
             <span><i class="bi bi-calendar3" aria-hidden="true"></i> Joined {{ profile_user.date_joined|date:"F Y" }}</span>
-            <span><i class="bi bi-grid-fill" aria-hidden="true"></i> {{ profile_user.post_count }} posts</span>
+            <span><i class="bi bi-grid-fill" aria-hidden="true"></i> {{ profile_user.post_count }} post{{ profile_user.post_count|pluralize }}</span>
         </div>
     </div>
     {% if is_own_profile %}
@@ -46,7 +46,7 @@
                 <i class="bi {% if post.is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}" aria-hidden="true"></i>
                 <span class="qorvli-like-count">{{ post.like_count }}</span>
             </button>
-            <span class="qorvli-comment-count"><i class="bi bi-chat-fill" aria-hidden="true"></i> {{ post.comment_count }} comments</span>
+            <span class="qorvli-comment-count"><i class="bi bi-chat-fill" aria-hidden="true"></i> {{ post.comment_count }} comment{{ post.comment_count|pluralize }}</span>
         </div>
     </article>
     {% empty %}

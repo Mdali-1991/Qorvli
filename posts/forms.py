@@ -8,6 +8,7 @@ class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ("content", "image")
+        error_messages = {"content": {"required": "Your post cannot be empty."}}
         widgets = {
             "content": forms.Textarea(
                 attrs={
@@ -43,6 +44,7 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ("content",)
+        error_messages = {"content": {"required": "Comment cannot be empty."}}
         widgets = {
             "content": forms.TextInput(
                 attrs={

@@ -14,6 +14,11 @@ from .models import Post, Comment, Like
 User = get_user_model()
 
 
+def form_error_text(form):
+    """Join a bound form's error messages into one sentence for a flash message."""
+    return " ".join(error for errors in form.errors.values() for error in errors)
+
+
 @login_required
 @require_http_methods(["GET"])
 def feed_view(request):
@@ -65,10 +70,7 @@ def create_post_view(request):
         post.save()
         messages.success(request, "Your post has been published.")
     else:
-        error_text = " ".join(
-            f"{field}: {', '.join(errors)}" for field, errors in form.errors.items()
-        )
-        messages.error(request, f"Could not publish your post. {error_text}")
+        messages.error(request, f"Could not publish your post. {form_error_text(form)}")
     return redirect("posts:feed")
 
 
@@ -84,7 +86,7 @@ def edit_post_view(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, "Your post has been updated.")
-            return redirect("posts:feed")
+            return redirect(post)
         messages.error(request, "Please correct the errors below.")
     else:
         form = PostForm(instance=post)
@@ -115,8 +117,8 @@ def add_comment_view(request, pk):
         comment.save()
         messages.success(request, "Your comment has been added.")
     else:
-        messages.error(request, "Comment could not be added. Please try again.")
-    return redirect("posts:feed")
+        messages.error(request, f"Comment could not be added. {form_error_text(form)}")
+    return redirect(post)
 
 
 @login_required
@@ -125,9 +127,10 @@ def delete_comment_view(request, pk):
     comment = get_object_or_404(Comment, pk=pk)
     if comment.author != request.user and comment.post.author != request.user:
         raise PermissionDenied("You do not have permission to delete this comment.")
+    post = comment.post
     comment.delete()
     messages.success(request, "Comment deleted.")
-    return redirect("posts:feed")
+    return redirect(post)
 
 
 @login_required
