@@ -8,7 +8,7 @@ with full create, read, update and delete (CRUD) functionality.
 
 **Live site:** _add your Heroku URL here after deploying_
 
-![QORVLI feed on desktop](docs/screenshots/feed-desktop.png)
+![QORVLI shown on a laptop (the feed) and a phone (a member's profile)](docs/screenshots/hero.png)
 
 ## Contents
 
@@ -571,7 +571,8 @@ commit history records each change with a descriptive message.
   `django-cloudinary-storage`; static files served by
   [WhiteNoise](https://whitenoise.readthedocs.io/).
 - Screenshots in `docs/screenshots/` were taken from the running
-  application with sample content written for this README.
+  application with sample content written for this README. The laptop and
+  phone mockup at the top (`hero.png`) is built from those screenshots.
 - Apart from the items above, all application code (models, views, forms,
   templates, CSS and JavaScript) was written for this project; no
   walkthrough project code was copied.
