@@ -1,0 +1,26 @@
+# Render Blueprint: describes the QORVLI web service so Render can create
+# it from this repository (Dashboard > New > Blueprint).
+# Values marked "sync: false" are secrets: Render asks for them when the
+# Blueprint is applied, and they are never stored in this repository.
+services:
+  - type: web
+    name: qorvli
+    runtime: python
+    plan: free
+    region: frankfurt
+    branch: main
+    buildCommand: ./build.sh
+    startCommand: gunicorn qorvli_project.wsgi
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: CLOUDINARY_URL
+        sync: false
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false

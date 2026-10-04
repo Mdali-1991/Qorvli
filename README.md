@@ -462,6 +462,7 @@ data stays available for as long as the project is being assessed.
 | `requirements.txt` | Python dependencies, installed during the build. |
 | `.python-version` | Pins Python 3.11 (Render and Heroku both read it). |
 | `build.sh` | Render's build command: installs dependencies, runs `collectstatic`, applies migrations and creates the admin account. |
+| `render.yaml` | Render Blueprint: the web service's settings as code, so Render can create the service in one step. |
 | `accounts/management/commands/ensure_superuser.py` | Creates the admin from environment variables if it doesn't exist. Render's free plan has no shell for `createsuperuser`. |
 | `Procfile` | Used only by Heroku (see the alternative below). |
 
@@ -483,6 +484,15 @@ Sign up at [cloudinary.com](https://cloudinary.com/) and copy the
 it is hidden.
 
 ### Step 3: Create the web service on Render
+
+**Quickest way (Blueprint):** in the Render dashboard click
+**New → Blueprint**, choose this repository, and Render reads
+`render.yaml`. It generates `SECRET_KEY` itself and asks for the five other
+values (`DATABASE_URL`, `CLOUDINARY_URL` and the three
+`DJANGO_SUPERUSER_*` values). Click **Apply** and continue at item 4 below.
+
+**Or set it up by hand:**
+
 
 1. Sign up at [render.com](https://render.com/) with your GitHub account.
 2. Click **New → Web Service**, choose this repository, and fill in:
@@ -564,6 +574,7 @@ Then deploy the `main` branch from the **Deploy** tab and run
 ├── .gitignore            # Keeps .env, db.sqlite3, media/, staticfiles/ out of Git
 ├── .python-version       # Python 3.11 for the hosting platform
 ├── build.sh              # Render build: install, collectstatic, migrate, create admin
+├── render.yaml           # Render Blueprint (service settings as code)
 ├── Procfile              # Heroku only: release (migrate) + web (gunicorn)
 ├── requirements.txt      # Python dependencies (pinned)
 ├── setup.cfg             # flake8 / pycodestyle configuration
