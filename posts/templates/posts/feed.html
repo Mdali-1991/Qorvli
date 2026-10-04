@@ -18,7 +18,7 @@
             <form method="post" action="{% url 'posts:create_post' %}" enctype="multipart/form-data" novalidate>
                 {% csrf_token %}
                 <div class="d-flex gap-3">
-                    <img src="{{ user.profile_picture_url }}" class="qorvli-avatar-sm" alt="">
+                    <img src="{{ user.profile_picture_url }}" class="qorvli-avatar-sm" alt="Your profile picture">
                     <div class="flex-grow-1">
                         <label for="{{ post_form.content.id_for_label }}" class="visually-hidden">Write a new post</label>
                         {{ post_form.content }}
@@ -41,7 +41,7 @@
             <article class="qorvli-card qorvli-post-card" id="post-{{ post.id }}">
                 <div class="qorvli-post-header">
                     <a href="{% url 'accounts:profile' username=post.author.username %}" aria-label="View {{ post.author.username }}'s profile">
-                        <img src="{{ post.author.profile_picture_url }}" class="qorvli-avatar-sm" alt="">
+                        <img src="{{ post.author.profile_picture_url }}" class="qorvli-avatar-sm" alt="{{ post.author.username }}'s profile picture">
                     </a>
                     <div class="flex-grow-1">
                         <a href="{% url 'accounts:profile' username=post.author.username %}" class="qorvli-author-link">
@@ -88,7 +88,7 @@
                 <div class="qorvli-comments collapse" id="comments-{{ post.id }}">
                     {% for comment in post.comments.all %}
                     <div class="qorvli-comment">
-                        <img src="{{ comment.author.profile_picture_url }}" class="qorvli-avatar-xs" alt="">
+                        <img src="{{ comment.author.profile_picture_url }}" class="qorvli-avatar-xs" alt="{{ comment.author.username }}'s profile picture">
                         <div class="qorvli-comment-bubble">
                             <strong>{{ comment.author.username }}</strong>
                             <span>{{ comment.content }}</span>
@@ -187,7 +187,7 @@
             <h2 class="h5"><i class="bi bi-people-fill" aria-hidden="true"></i> Suggested for you</h2>
             {% for suggested in suggested_users %}
             <a href="{% url 'accounts:profile' username=suggested.username %}" class="qorvli-suggested-user">
-                <img src="{{ suggested.profile_picture_url }}" class="qorvli-avatar-xs" alt="">
+                <img src="{{ suggested.profile_picture_url }}" class="qorvli-avatar-xs" alt="{{ suggested.username }}'s profile picture">
                 <div>
                     <strong>{{ suggested.username }}</strong>
                     <div class="qorvli-post-meta">{{ suggested.location|default:"QORVLI member" }}</div>

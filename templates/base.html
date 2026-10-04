@@ -19,6 +19,7 @@
 <body data-default-avatar="{% static 'images/default-avatar.svg' %}">
 
 {% if user.is_authenticated %}
+<header>
 <nav class="navbar navbar-expand-lg qorvli-navbar sticky-top" data-bs-theme="dark" aria-label="Main navigation">
     <div class="container">
         <a class="navbar-brand qorvli-brand" href="{% url 'posts:feed' %}">
@@ -43,7 +44,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'accounts:profile' username=user.username %}">
-                        <img src="{{ user.profile_picture_url }}" alt="" class="qorvli-nav-avatar">
+                        <img src="{{ user.profile_picture_url }}" alt="Your profile picture" class="qorvli-nav-avatar">
                         {{ user.username }}
                     </a>
                 </li>
@@ -58,6 +59,7 @@
         </div>
     </div>
 </nav>
+</header>
 {% endif %}
 
 <main class="qorvli-main">
