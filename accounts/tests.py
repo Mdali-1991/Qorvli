@@ -4,6 +4,10 @@ Automated tests for the accounts app.
 Run with:  python manage.py test accounts
 """
 
+from io import StringIO
+from unittest import mock
+
+from django.core.management import call_command
 from django.test import TestCase
 from django.urls import reverse
 
@@ -175,3 +179,64 @@ class ProfileTests(TestCase):
 
     def test_profile_picture_fallback_url_is_generated(self):
         self.assertIn("ui-avatars.com", self.user.profile_picture_url)
+
+
+class EnsureSuperuserCommandTests(TestCase):
+    """The deploy-time command that creates the admin account."""
+
+    env = {
+        "DJANGO_SUPERUSER_USERNAME": "siteadmin",
+        "DJANGO_SUPERUSER_EMAIL": "admin@example.com",
+        "DJANGO_SUPERUSER_PASSWORD": "Adm1n-Pass-2026!",
+    }
+
+    def run_command(self):
+        out = StringIO()
+        call_command("ensure_superuser", stdout=out)
+        return out.getvalue()
+
+    def test_creates_superuser_from_environment(self):
+        with mock.patch.dict("os.environ", self.env):
+            output = self.run_command()
+        admin = User.objects.get(username="siteadmin")
+        self.assertTrue(admin.is_superuser and admin.is_staff)
+        self.assertTrue(admin.check_password("Adm1n-Pass-2026!"))
+        self.assertIn("created", output)
+
+    def test_running_twice_does_not_fail_or_duplicate(self):
+        with mock.patch.dict("os.environ", self.env):
+            self.run_command()
+            output = self.run_command()
+        self.assertEqual(User.objects.filter(username="siteadmin").count(), 1)
+        self.assertIn("already exists", output)
+
+    def test_skips_when_variables_missing(self):
+        with mock.patch.dict("os.environ", {}, clear=True):
+            output = self.run_command()
+        self.assertFalse(User.objects.exists())
+        self.assertIn("skipping", output)
+
+
+class AdminAccessTests(TestCase):
+    """Only staff can reach the Django admin used for moderation (US14)."""
+
+    def test_staff_can_manage_users_posts_comments_and_likes(self):
+        User.objects.create_superuser(
+            username="moderator", email="m@example.com", password="pw12345x"
+        )
+        self.client.login(username="moderator", password="pw12345x")
+        for url in [
+            "/admin/",
+            "/admin/accounts/user/",
+            "/admin/posts/post/",
+            "/admin/posts/comment/",
+            "/admin/posts/like/",
+        ]:
+            self.assertEqual(self.client.get(url).status_code, 200, url)
+
+    def test_ordinary_member_is_refused(self):
+        User.objects.create_user(username="member", password="pw12345x")
+        self.client.login(username="member", password="pw12345x")
+        response = self.client.get("/admin/posts/post/")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/admin/login/", response["Location"])

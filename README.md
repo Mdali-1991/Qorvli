@@ -6,7 +6,7 @@ like each other's posts, and search everything that has been shared. It is
 a full-stack Django application backed by a relational PostgreSQL database
 with full create, read, update and delete (CRUD) functionality.
 
-**Live site:** _add your Heroku URL here after deploying_
+**Live site:** _add your Render URL here after deploying_
 
 ![QORVLI on a laptop (the feed), a tablet (a member's profile) and a phone (the feed)](docs/screenshots/hero.png)
 
@@ -21,7 +21,7 @@ with full create, read, update and delete (CRUD) functionality.
 7. [Technologies used](#7-technologies-used)
 8. [Testing](#8-testing)
 9. [Local setup](#9-local-setup)
-10. [Deploying to Heroku](#10-deploying-to-heroku)
+10. [Deployment](#10-deployment)
 11. [Project structure](#11-project-structure)
 12. [Development process](#12-development-process)
 13. [Attribution and credits](#13-attribution-and-credits)
@@ -95,7 +95,7 @@ How each story is met is tested in
 | Like/unlike via AJAX with live counter | US10 | `toggle_like_view`, `static/js/main.js` |
 | Search posts and members, with paginated results | US11 | `feed_view` |
 | Flash messages for every action, spinners while forms submit | US12 | `templates/base.html`, `main.js` |
-| Custom 403, 404 and 500 pages with a link back to the feed | US12, US13 | `templates/`, `qorvli_project/views.py` |
+| Custom 403, 404, 405 and 500 pages with a link back to the feed | US12, US13 | `templates/`, `qorvli_project/views.py`, `qorvli_project/middleware.py` |
 | Django admin for moderators | US14 | `accounts/admin.py`, `posts/admin.py` |
 
 ### Screenshots
@@ -328,7 +328,7 @@ page with a confirmation message, and likes update in place.
   `.env`. It is never `True` in production.
 - **HTTPS in production:** when `DEBUG=False`, the app redirects HTTP to
   HTTPS, marks session and CSRF cookies as secure, sends an HSTS header, and
-  trusts Heroku's `X-Forwarded-Proto` header.
+  trusts the hosting platform's `X-Forwarded-Proto` header.
 - **Clickjacking and MIME sniffing:** `X_FRAME_OPTIONS = "DENY"` and
   `SECURE_CONTENT_TYPE_NOSNIFF` are set.
 - **Login required:** every page except sign-up and login requires a
@@ -359,10 +359,10 @@ page with a confirmation message, and likes update in place.
 |---|---|
 | Languages | Python 3.11, HTML5, CSS3, JavaScript (ES6) |
 | Framework | [Django 5.2 LTS](https://www.djangoproject.com/) |
-| Database | PostgreSQL (Heroku Postgres) in production, SQLite locally |
+| Database | PostgreSQL (Neon) in production, SQLite locally |
 | Front-end libraries | [Bootstrap 5.3](https://getbootstrap.com/), [Bootstrap Icons](https://icons.getbootstrap.com/), Google Fonts (Poppins, Inter) |
 | Python packages | `django-environ` (settings from environment), `dj-database-url` (database URL parsing), `psycopg2-binary` (PostgreSQL driver), `Pillow` (image validation), `whitenoise` (static files), `gunicorn` (production server), `cloudinary` + `django-cloudinary-storage` (image hosting) |
-| Hosting | Heroku |
+| Hosting | Render (web service), Neon (PostgreSQL), Cloudinary (images) |
 | Tools | Git and GitHub, `flake8`, W3C Nu HTML Checker, W3C CSS Validator, JSHint, Chrome DevTools |
 
 ---
@@ -375,12 +375,65 @@ and a log of every bug found with its fix.
 
 ```bash
 python manage.py test                      # automated tests
-flake8 .                                   # PEP8 style (settings in setup.cfg)
+flake8 .                                   # PEP8 style and unused code
 python manage.py makemigrations --check    # no unapplied model changes
 ```
 
 **Code style:** Python follows PEP8 with its default settings, including the
 79-character line limit. Auto-generated `migrations/` are excluded.
+
+### Validation results
+
+| Language | Tool | Result |
+|---|---|---|
+| HTML | W3C Nu HTML Checker 26.10.2, 17 pages | No errors or warnings |
+| CSS | W3C Nu checker (CSS mode) 26.10.2, `style.css` | No errors or warnings |
+| JavaScript | JSHint 2.13.6, `main.js` | No warnings (default and strict settings) |
+| Python | pycodestyle 2.15 (PEP8 defaults) and flake8 7.4 | No issues |
+
+The checks were run with the official checker software on a local
+machine, because validator.w3.org and jigsaw.w3.org could not be reached
+from the environment used. Pages behind the login were rendered with
+sample data and pasted in as text, which is also how they must be checked
+online. Details, and the errors fixed to reach these results, are in
+[`TESTING.md`](TESTING.md#2-code-validation).
+
+**CSS:**
+
+![W3C result for style.css: no errors or warnings](docs/validation/css-style.png)
+
+**JavaScript:**
+
+![JSHint output for main.js: 0 warnings](docs/validation/jshint-main-js.png)
+
+**Python:**
+
+![pycodestyle and flake8 output: 0 issues](docs/validation/pep8-python.png)
+
+<details>
+<summary><strong>HTML: W3C results for all 17 pages</strong> (click to expand)</summary>
+
+| Page | Result |
+|---|---|
+| Login | ![W3C result: Login](docs/validation/html-login.png) |
+| Login with errors | ![W3C result: Login with errors](docs/validation/html-login-error.png) |
+| Sign-up | ![W3C result: Sign-up](docs/validation/html-signup.png) |
+| Sign-up with errors | ![W3C result: Sign-up with errors](docs/validation/html-signup-error.png) |
+| Feed | ![W3C result: Feed](docs/validation/html-feed.png) |
+| Feed, page 2 of a search | ![W3C result: Feed, page 2 of a search](docs/validation/html-feed-page2-search.png) |
+| Search with no results | ![W3C result: Search with no results](docs/validation/html-feed-empty-search.png) |
+| Own profile | ![W3C result: Own profile](docs/validation/html-profile-own.png) |
+| Another member's profile | ![W3C result: Another member's profile](docs/validation/html-profile-other.png) |
+| Edit profile | ![W3C result: Edit profile](docs/validation/html-edit-profile.png) |
+| Edit profile with errors | ![W3C result: Edit profile with errors](docs/validation/html-edit-profile-error.png) |
+| Edit post | ![W3C result: Edit post](docs/validation/html-edit-post.png) |
+| Edit post with errors | ![W3C result: Edit post with errors](docs/validation/html-edit-post-error.png) |
+| 403 page | ![W3C result: 403 page](docs/validation/html-403.png) |
+| 404 page | ![W3C result: 404 page](docs/validation/html-404.png) |
+| 405 page | ![W3C result: 405 page](docs/validation/html-405.png) |
+| 500 page | ![W3C result: 500 page](docs/validation/html-500.png) |
+
+</details>
 
 ---
 
@@ -431,89 +484,138 @@ are stored there instead (see `qorvli_project/settings.py`).
 |---|---|---|---|
 | `SECRET_KEY` | Yes | long random string | Django cryptographic signing. The app refuses to start without it. |
 | `DEBUG` | No | `False` (default) | Set `True` only for local development. |
-| `ALLOWED_HOSTS` | In production | `your-app.herokuapp.com` | Comma-separated host names the app will serve. |
-| `CSRF_TRUSTED_ORIGINS` | In production | `https://your-app.herokuapp.com` | Origins allowed to submit forms over HTTPS. |
-| `DATABASE_URL` | In production | set automatically by Heroku Postgres | Database connection; falls back to SQLite locally. |
+| `ALLOWED_HOSTS` | Only off Render | `your-app.herokuapp.com` | Comma-separated host names the app will serve. On Render the site's address is added automatically. |
+| `CSRF_TRUSTED_ORIGINS` | Only off Render | `https://your-app.herokuapp.com` | Origins allowed to submit forms over HTTPS. Automatic on Render. |
+| `DATABASE_URL` | In production | Neon connection string | Database connection; falls back to SQLite locally. |
 | `CLOUDINARY_URL` | In production | `cloudinary://KEY:SECRET@CLOUD_NAME` | Stores uploaded images on Cloudinary. |
 | `SECURE_HSTS_SECONDS` | No | `3600` | HSTS max-age when `DEBUG=False`. |
 | `SECURE_SSL_REDIRECT` | No | `True` | Redirect HTTP to HTTPS when `DEBUG=False`. |
+| `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_EMAIL`, `DJANGO_SUPERUSER_PASSWORD` | On Render | your admin details | Used by `build.sh` to create the admin account if it doesn't exist. |
+| `RENDER_EXTERNAL_HOSTNAME` | Set by Render | `qorvli.onrender.com` | Added to `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` automatically. |
 
 None of these values are committed: `.env` is listed in `.gitignore`, and
 `.env.example` contains placeholders only.
 
 ---
 
----
+## 10. Deployment
 
-## 10. Deploying to Heroku
+The site is deployed on [Render](https://render.com/) (free web service),
+with the PostgreSQL database on [Neon](https://neon.com/) (free plan) and
+uploaded images on [Cloudinary](https://cloudinary.com/) (free plan).
 
-The repository root contains everything Heroku needs to detect and run the
-app:
+**Why Neon for the database:** Render's own free PostgreSQL databases are
+deleted 30 days after creation. Neon's free plan has no time limit, so the
+data stays available for as long as the project is being assessed.
+
+### Files used for deployment
 
 | File | Role |
 |---|---|
-| `requirements.txt` | Tells Heroku this is a Python app and lists the dependencies. |
-| `.python-version` | Pins Python 3.11. |
-| `Procfile` | `release: python manage.py migrate` runs migrations on every deploy; `web: gunicorn qorvli_project.wsgi` starts the server. |
-| `STATIC_ROOT` in `settings.py` | Lets the Python buildpack run `collectstatic` automatically during the build; WhiteNoise then serves the hashed files. |
+| `requirements.txt` | Python dependencies, installed during the build. |
+| `.python-version` | Pins Python 3.11 (Render and Heroku both read it). |
+| `build.sh` | Render's build command: installs dependencies, runs `collectstatic`, applies migrations and creates the admin account. |
+| `render.yaml` | Render Blueprint: the web service's settings as code, so Render can create the service in one step. |
+| `accounts/management/commands/ensure_superuser.py` | Creates the admin from environment variables if it doesn't exist. Render's free plan has no shell for `createsuperuser`. |
+| `Procfile` | Used only by Heroku (see the alternative below). |
 
-### Option A: Heroku dashboard (GitHub integration)
+### Step 1: Create the database on Neon
 
-1. Create a free [Cloudinary](https://cloudinary.com/) account and copy the
-   **API environment variable** (`cloudinary://...`) from its dashboard.
-2. In the [Heroku dashboard](https://dashboard.heroku.com/), click
-   **New → Create new app**, choose a name and region.
-3. **Resources** tab: add the **Heroku Postgres** add-on. This sets
-   `DATABASE_URL` for you.
-4. **Settings → Reveal Config Vars**: add `SECRET_KEY`, `DEBUG=False`,
-   `CLOUDINARY_URL`, `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`. Use the app
-   domain shown under **Settings → Domains** (for example
-   `your-app-1a2b3c4d5e6f.herokuapp.com`) and prefix it with `https://` for
-   `CSRF_TRUSTED_ORIGINS`.
-5. **Deploy** tab: choose **GitHub**, connect this repository, select the
-   branch, and click **Deploy Branch** (optionally enable automatic deploys).
-6. Watch the build log: dependencies install, `collectstatic` runs, and the
-   `release` phase applies migrations.
-7. Create an admin account: **More → Run console** →
-   `python manage.py createsuperuser`.
-8. Click **Open app**.
+1. Sign up at [neon.com](https://neon.com/) (no credit card needed) and
+   create a project, choosing the region closest to your Render region
+   (e.g. *AWS Europe (Frankfurt)* for Render *Frankfurt*).
+2. On the project dashboard, click **Connect** and copy the connection
+   string. It looks like
+   `postgresql://user:password@ep-xxxx.eu-central-1.aws.neon.tech/neondb?sslmode=require`.
+   This is your `DATABASE_URL`; keep it private.
 
-### Option B: Heroku CLI
+### Step 2: Get the Cloudinary URL
 
-```bash
-heroku login
-heroku create your-app-name
-heroku addons:create heroku-postgresql:essential-0
-heroku config:set SECRET_KEY="$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')"
-heroku config:set DEBUG=False
-heroku config:set CLOUDINARY_URL="cloudinary://API_KEY:API_SECRET@CLOUD_NAME"
-heroku domains     # shows the exact your-app-name-xxxx.herokuapp.com host
-heroku config:set ALLOWED_HOSTS=your-app-name-xxxx.herokuapp.com
-heroku config:set CSRF_TRUSTED_ORIGINS=https://your-app-name-xxxx.herokuapp.com
+Sign up at [cloudinary.com](https://cloudinary.com/) and copy the
+**API environment variable** from the dashboard
+(`cloudinary://API_KEY:API_SECRET@CLOUD_NAME`). Reveal the secret first if
+it is hidden.
 
-git push heroku main            # or: git push heroku <your-branch>:main
+### Step 3: Create the web service on Render
 
-heroku run python manage.py createsuperuser
-heroku open
-```
+**Quickest way (Blueprint):** in the Render dashboard click
+**New → Blueprint**, choose this repository, and Render reads
+`render.yaml`. It generates `SECRET_KEY` itself and asks for the five other
+values (`DATABASE_URL`, `CLOUDINARY_URL` and the three
+`DJANGO_SUPERUSER_*` values). Click **Apply** and continue at item 4 below.
 
-Migrations run automatically in the `release` phase, so no manual
-`migrate` step is needed.
+**Or set it up by hand:**
+
+
+1. Sign up at [render.com](https://render.com/) with your GitHub account.
+2. Click **New → Web Service**, choose this repository, and fill in:
+
+| Setting | Value |
+|---|---|
+| Name | e.g. `qorvli` (becomes `qorvli.onrender.com` if available) |
+| Region | e.g. Frankfurt (match your Neon region) |
+| Branch | `main` |
+| Runtime | Python 3 |
+| Build Command | `./build.sh` |
+| Start Command | `gunicorn qorvli_project.wsgi` |
+| Instance Type | Free |
+
+3. Under **Environment Variables**, add:
+
+| Key | Value |
+|---|---|
+| `SECRET_KEY` | a long random string (see section 9 for a command to generate one) |
+| `DATABASE_URL` | the Neon connection string from Step 1 |
+| `CLOUDINARY_URL` | the Cloudinary URL from Step 2 |
+| `DJANGO_SUPERUSER_USERNAME` | the admin username you want |
+| `DJANGO_SUPERUSER_EMAIL` | the admin email |
+| `DJANGO_SUPERUSER_PASSWORD` | a strong admin password |
+
+`DEBUG` defaults to `False`, so it doesn't need setting. `ALLOWED_HOSTS` and
+`CSRF_TRUSTED_ORIGINS` don't need setting either: Render provides the
+site's address in `RENDER_EXTERNAL_HOSTNAME`, which `settings.py` trusts
+automatically.
+
+4. Click **Create Web Service**. The log shows the build installing
+   dependencies, collecting static files, applying migrations and
+   `Superuser '...' created.`, followed by **"Your service is live"**.
+5. Open the `https://<name>.onrender.com` link at the top of the page.
+
+Every push to `main` redeploys automatically. Redeploys skip migrations
+that have already run and leave the existing admin account alone.
+
+### Free-plan behaviour
+
+- The service sleeps after 15 minutes without visitors. The next visit
+  takes about a minute to load while it wakes up; after that the site is
+  fast. This doesn't affect any data.
+- Uploaded images are stored on Cloudinary, because Render's own disk is
+  wiped on every deploy and restart.
+
+### Alternative: Heroku (paid)
+
+The project also runs on Heroku, using the `Procfile`. Create an app, add
+the Heroku Postgres add-on, and set `SECRET_KEY`, `CLOUDINARY_URL`,
+`ALLOWED_HOSTS` (the app's `*.herokuapp.com` address) and
+`CSRF_TRUSTED_ORIGINS` (the same address with `https://`) as Config Vars.
+Then deploy the `main` branch from the **Deploy** tab and run
+`python manage.py createsuperuser` from **More → Run console**. The
+`release` line in the `Procfile` applies migrations on every deploy.
 
 ### After deploying
 
-- Confirm `DEBUG` is `False`: visiting a non-existent URL should show the
-  custom 404 page, never a Django debug page.
-- Re-run the manual tests in [`TESTING.md`](TESTING.md) against the live
-  site and record the results.
-- If the build fails with `ImproperlyConfigured: Set the SECRET_KEY
-  environment variable`, the config var was missing when `collectstatic`
-  ran; add it and redeploy.
-- `DisallowedHost` or a 400 error means `ALLOWED_HOSTS` doesn't match the
-  app domain; a CSRF 403 on form submission means `CSRF_TRUSTED_ORIGINS` is
-  missing `https://`.
+- Visit a non-existent URL: the custom 404 page should appear, never a
+  Django debug page. That confirms `DEBUG` is off.
+- Re-run the manual tests in [`TESTING.md`](TESTING.md) on the live site and
+  record the results.
 
----
+| Problem | Cause and fix |
+|---|---|
+| Build fails with `Set the SECRET_KEY environment variable` | `SECRET_KEY` is missing; add it and redeploy (**Manual Deploy → Deploy latest commit**). |
+| Build fails at `migrate` with a connection error | `DATABASE_URL` is wrong; copy it again from Neon, including `?sslmode=require`. |
+| `Permission denied: ./build.sh` | Set the Build Command to `bash build.sh` instead. |
+| Photos disappear after a redeploy | `CLOUDINARY_URL` is missing or wrong. |
+| Bad Request (400) on a custom domain | Add that domain to `ALLOWED_HOSTS` and, with `https://`, to `CSRF_TRUSTED_ORIGINS`. |
 
 ---
 
@@ -523,8 +625,10 @@ Migrations run automatically in the `release` phase, so no manual
 .
 ├── .env.example          # Template for local environment variables (no real secrets)
 ├── .gitignore            # Keeps .env, db.sqlite3, media/, staticfiles/ out of Git
-├── .python-version       # Python 3.11 for Heroku
-├── Procfile              # Heroku release (migrate) + web (gunicorn) processes
+├── .python-version       # Python 3.11 for the hosting platform
+├── build.sh              # Render build: install, collectstatic, migrate, create admin
+├── render.yaml           # Render Blueprint (service settings as code)
+├── Procfile              # Heroku only: release (migrate) + web (gunicorn)
 ├── requirements.txt      # Python dependencies (pinned)
 ├── setup.cfg             # flake8 / pycodestyle configuration
 ├── manage.py
@@ -564,8 +668,8 @@ rather than separate settings files, so the same code runs in both.
 - **Testing:** automated tests for every view and permission rule,
   validation of HTML, CSS, JavaScript and Python, and manual testing on
   desktop and mobile. Bugs and their fixes are logged in `TESTING.md`.
-- **Deployment:** Heroku with Heroku Postgres and Cloudinary, configured
-  through environment variables.
+- **Deployment:** Render with a Neon PostgreSQL database and Cloudinary for
+  images, configured through environment variables.
 
 The project is version-controlled with Git and hosted on GitHub; the
 commit history records each change with a descriptive message.

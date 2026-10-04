@@ -26,7 +26,7 @@ from the repository root (a `.env` with at least `SECRET_KEY` is needed, see
 python manage.py test
 ```
 
-**Result: 37 tests, all passing.**
+**Result: 47 tests, all passing.**
 
 | Area | What is tested |
 |---|---|
@@ -38,6 +38,10 @@ python manage.py test
 | Images | Valid image saved; non-image file rejected; image over 8MB rejected |
 | Comments | Member can comment; blank comment rejected; comment author and post author can delete; anyone else gets 403 |
 | Likes | Liking creates a like and returns JSON; liking again removes it; the database rejects a duplicate like |
+| Deployment | `ensure_superuser` creates the admin from environment variables, is safe to run again, and skips when the variables are missing |
+| Defensive requests | Opening a POST-only address directly shows the custom 405 page (with the `Allow` header), AJAX requests keep the plain 405; invalid page numbers (`abc`, `-1`, `99999`) still show the feed; missing posts and members return 404 |
+| Delete dialogs | The dialogs are rendered after `</main>` (where Bootstrap can show them above its backdrop), only one `<main>` element exists, and no template comment leaks into the page |
+| Admin area | Staff can open the admin lists of users, posts, comments and likes; ordinary members are redirected to the admin login |
 
 ---
 
@@ -47,16 +51,28 @@ python manage.py test
 
 | Language | Tool | Scope | Result |
 |---|---|---|---|
-| HTML | W3C Nu HTML Checker | 16 rendered pages | **0 errors, 0 warnings, 0 info messages** |
-| CSS | W3C CSS checker (CSS mode of the Nu checker) | `static/css/style.css` | **0 errors, 0 warnings** |
-| JavaScript | JSHint 2.13 | `static/js/main.js` | **0 warnings** (default and strict settings) |
-| Python | `pycodestyle` and `flake8` with default PEP8 settings | All `.py` files except auto-generated migrations | **0 issues** |
+| HTML | W3C Nu HTML Checker 26.10.2 | 17 rendered pages | **0 errors, 0 warnings, 0 info messages** |
+| CSS | W3C Nu checker 26.10.2, CSS mode | `static/css/style.css` | **0 errors, 0 warnings** |
+| JavaScript | JSHint 2.13.6 | `static/js/main.js` | **0 warnings** (default and strict settings) |
+| Python | pycodestyle 2.15 (PEP8 defaults) and flake8 7.4 | All `.py` files except auto-generated migrations | **0 issues** |
 
 The online validators at validator.w3.org and jigsaw.w3.org were blocked by
 the network policy of the environment used for this audit. The HTML and CSS
-were therefore checked with `vnu.jar`, the official W3C Nu checker that
-runs [validator.w3.org/nu](https://validator.w3.org/nu/), installed locally.
-The live-site checks below are still to be recorded.
+were therefore checked with the official W3C Nu checker,
+[`vnu-jar` 26.10.2](https://www.npmjs.com/package/vnu-jar) (released
+2 October 2026, the software behind
+[validator.w3.org/nu](https://validator.w3.org/nu/)), running locally with
+its own web interface. Each page's source was pasted in as text input,
+which is also how signed-in pages must be checked online.
+
+**Evidence:** screenshots of every result are in
+[`docs/validation/`](docs/validation/) and shown in the README's
+"Validation results" section.
+
+**Note on checker versions:** an earlier run used an older bundled copy
+of the checker (20.6.30, from 2020), which reported no errors. The current
+version found one more error that the old one missed (see "Fixed during
+validation" below). All results on this page are from version 26.10.2.
 
 ### HTML (W3C Nu HTML Checker)
 
@@ -72,7 +88,7 @@ behind the login were validated too:
 | Sign-up with errors | Pass | Edit profile with errors | Pass |
 | Feed | Pass | Edit post | Pass |
 | Feed page 2 with a search | Pass | Edit post with errors | Pass |
-| Search with no results | Pass | 403, 404, 500 | Pass |
+| Search with no results | Pass | 403, 404, 405, 500 | Pass |
 
 A separate check confirmed every element is closed and correctly nested,
 and every `<img>` has descriptive `alt` text.
@@ -86,11 +102,15 @@ and every `<img>` has descriptive `alt` text.
 - The navigation wasn't inside a `<header>` landmark.
 - The error pages linked home with a hard-coded `/` rather than
   `{% url 'posts:feed' %}`.
+- The delete-confirmation dialogs had `aria-labelledby` on a `<div>`
+  without a `role` (24 errors on the feed pages, reported only by the
+  current checker). They now declare `role="dialog"`.
 
-**To check on the live site:** open each page, choose "View page source",
-and paste it into [validator.w3.org/nu](https://validator.w3.org/nu/#textarea)
-(direct input). Logged-in pages can't be checked by URL. _Record results
-and screenshots here._
+**Re-checking online (recommended once the site is live):** open each
+page, choose "View page source", and paste it into
+[validator.w3.org/nu](https://validator.w3.org/nu/#textarea) (text input);
+signed-in pages can't be checked by URL. The results should match the
+screenshots above.
 
 ### CSS (W3C CSS checker)
 
@@ -110,9 +130,11 @@ merged, and an unused class, an unused variable and redundant selectors
 were removed. Before/after screenshots of 9 pages at 390, 768 and 1280px
 showed no visible change.
 
-**To check:** paste the file into the
+**Evidence:** [`docs/validation/css-style.png`](docs/validation/css-style.png).
+
+**Re-checking online (recommended):** paste the file into the
 [W3C CSS Validator (Jigsaw)](https://jigsaw.w3.org/css-validator/#validate_by_input)
-and save a screenshot. _Record the result here._
+as well. It is a separate W3C service from the one used above.
 
 ### JavaScript (JSHint)
 
@@ -173,7 +195,7 @@ practices and SEO for the feed and a profile, on desktop and mobile.
 | US11 Search posts and members | Search tests; manual tests 18–19 | Pass |
 | US12 Clear feedback | Message assertions in tests; manual tests 6–20; spinners on submit | Pass |
 | US13 Nobody else can change my content | 403 tests for edit/delete of posts and comments; manual tests 12 and 16 | Pass |
-| US14 Admin area for moderation | Manual: staff account can manage users, posts, comments and likes at `/admin/`; non-staff can't log in there | _To record_ |
+| US14 Admin area for moderation | `AdminAccessTests`: a staff account can open the admin lists of users, posts, comments and likes; an ordinary member is sent to the admin login | Pass |
 
 ---
 
@@ -183,45 +205,47 @@ Tests 1–27 were carried out on desktop Chrome, mobile Chrome (DevTools
 device emulation) and keyboard-only navigation. Tests 28–37 were added
 during the final reviews.
 
-| # | Test case | Steps | Expected result | Result |
-|---|---|---|---|---|
-| 1 | Sign up | Go to `/accounts/signup/`, fill in a new username/email/password | Account created, redirected to login with a success message | Pass |
-| 2 | Duplicate email blocked | Sign up again with an email already in use | Form re-displays with "An account with this email already exists." | Pass |
-| 3 | Login (valid) | Enter correct username/password | Redirected to feed, "Welcome back" message shown | Pass |
-| 4 | Login (invalid) | Enter wrong password | Form re-displays with "Invalid username or password." — no user is logged in | Pass |
-| 5 | Logout | Click Logout (submits a POST form) | Session ends, redirected to login | Pass |
-| 6 | Create post (text) | Type text in composer, click Post | Post appears at top of feed immediately | Pass |
-| 7 | Create post (empty) | Submit composer with no text | Post rejected, error message shown, nothing added to feed | Pass |
-| 8 | Create post with image | Attach a JPG under 8MB | Post is created with the image displayed inline | Pass |
-| 9 | Oversized image rejected | Attach an image over 8MB | Form error: "Image file too large" | Pass |
-| 10 | Edit own post | Open a post's "..." menu → Edit → change text → Save | Feed shows updated text | Pass |
-| 11 | Delete own post | "..." menu → Delete → confirm in modal | Post removed from feed, confirmation message shown | Pass |
-| 12 | Cannot edit/delete others' posts | Log in as a different user, try to visit another user's edit-post URL directly | Custom 403 page returned, post unchanged | Pass |
-| 13 | Add comment | Open comments on a post, type a comment, submit | Page returns to that post (`#post-<id>`) with the new comment and a success message | Pass |
-| 14 | Delete comment (own) | Delete a comment you wrote | Comment removed | Pass |
-| 15 | Delete comment (as post owner) | Delete someone else's comment on your own post | Comment removed | Pass |
-| 16 | Cannot delete unrelated comment | Try to delete a comment that isn't yours and isn't on your post (via direct POST) | 403 Forbidden | Pass |
-| 17 | Like / unlike | Click the heart icon on a post | Icon fills in, counter increments; clicking again reverses it — no page reload (AJAX) | Pass |
-| 18 | Search | Type a keyword into the navbar search | Feed filters to posts/authors matching the keyword, "Clear" link resets it | Pass |
-| 19 | Pagination | Create 11+ posts, scroll to bottom | Pagination controls appear and page through correctly | Pass |
-| 20 | Edit profile | Update bio, location and profile picture | Profile page reflects the new details and avatar immediately | Pass |
-| 21 | View another user's profile | Click a username/avatar | Their profile and posts load; "Edit Profile" button is hidden (not their own profile) | Pass |
-| 22 | 404 handling | Visit a non-existent URL | Custom 404 page shown, no stack trace | Pass |
-| 23 | Broken/forward navigation | Use browser Back/Forward after liking/commenting | Page state is still correct, no broken links or console errors | Pass |
-| 24 | Keyboard navigation | Tab through navbar, composer, like/comment buttons, modals | All interactive elements are reachable and usable via keyboard; focus is visible | Pass |
-| 25 | Screen reader labels | Inspect like/comment/delete buttons with a screen reader | Icon-only buttons announce their purpose (`aria-label`) rather than reading nothing | Pass |
-| 26 | Responsive layout | Resize viewport from desktop to mobile widths | Navbar collapses to a hamburger menu, sidebar hides on small screens, cards remain readable | Pass |
-| 27 | Secrets not exposed | Inspect repository and deployed source | No password or `SECRET_KEY` committed; `.env` is git-ignored; `DEBUG=False` in production | Pass |
-| 28 | Reserved username | Sign up with the username "edit" | Form shows "This username is reserved. Please choose another." | Pass |
-| 29 | Empty search | Search for a word that appears in no post or name | "No posts match ..." with a link back to all posts | Pass |
-| 30 | Return to post | Comment on or edit a post further down the feed | Page reopens at that post with a success message | Pass |
-| 31 | Avatar service unavailable | Block `ui-avatars.com` in DevTools (Network → Block request domain) and reload | Default avatar shown everywhere; no broken images | Pass |
-| 32 | Bootstrap CDN unavailable | Block `cdn.jsdelivr.net` and reload | Page still usable; comment panels open; no JavaScript errors in the console | Pass |
-| 33 | Password rules shown | Open the sign-up page | Password requirements are listed under the password field before submitting | Pass |
-| 34 | Live site matches development | Repeat tests 1–37 on the deployed Heroku site | Same behaviour as locally | _To record after deployment_ |
-| 35 | Back button after submitting | Submit a comment, then press Back | Buttons on the restored page work normally (not stuck on "Saving...") | Pass (restore simulated in Chromium; _confirm on the live site in Safari/Firefox_) |
-| 36 | Expired session | Sign out in another tab, then like a post | "Your session has expired. Please sign in again." | Pass |
-| 37 | Clear a chosen photo | Choose a photo in the composer, then cancel the selection | Label returns to "Photo" | Pass |
+| # | Feature | Action | Expected result | Actual result | Pass/Fail |
+|---|---|---|---|---|---|
+| 1 | Sign up | Go to `/accounts/signup/`, fill in a new username/email/password | Account created, redirected to login with a success message | As expected | Pass |
+| 2 | Duplicate email blocked | Sign up again with an email already in use | Form re-displays with "An account with this email already exists." | As expected | Pass |
+| 3 | Login (valid) | Enter correct username/password | Redirected to feed, "Welcome back" message shown | As expected | Pass |
+| 4 | Login (invalid) | Enter wrong password | Form re-displays with "Invalid username or password." — no user is logged in | As expected | Pass |
+| 5 | Logout | Click Logout (submits a POST form) | Session ends, redirected to login | As expected | Pass |
+| 6 | Create post (text) | Type text in composer, click Post | Post appears at top of feed immediately | As expected | Pass |
+| 7 | Create post (empty) | Submit composer with no text | Post rejected, error message shown, nothing added to feed | As expected | Pass |
+| 8 | Create post with image | Attach a JPG under 8MB | Post is created with the image displayed inline | As expected | Pass |
+| 9 | Oversized image rejected | Attach an image over 8MB | Form error: "Image file too large" | As expected | Pass |
+| 10 | Edit own post | Open a post's "..." menu → Edit → change text → Save | Feed shows updated text | As expected | Pass |
+| 11 | Delete own post | "..." menu → Delete → confirm in modal | Post removed from feed, confirmation message shown | As expected | Pass |
+| 12 | Cannot edit/delete others' posts | Log in as a different user, try to visit another user's edit-post URL directly | Custom 403 page returned, post unchanged | As expected | Pass |
+| 13 | Add comment | Open comments on a post, type a comment, submit | Page returns to that post (`#post-<id>`) with the new comment and a success message | As expected | Pass |
+| 14 | Delete comment (own) | Delete a comment you wrote | Comment removed | As expected | Pass |
+| 15 | Delete comment (as post owner) | Delete someone else's comment on your own post | Comment removed | As expected | Pass |
+| 16 | Cannot delete unrelated comment | Try to delete a comment that isn't yours and isn't on your post (via direct POST) | 403 Forbidden | As expected | Pass |
+| 17 | Like / unlike | Click the heart icon on a post | Icon fills in, counter increments; clicking again reverses it — no page reload (AJAX) | As expected | Pass |
+| 18 | Search | Type a keyword into the navbar search | Feed filters to posts/authors matching the keyword, "Clear" link resets it | As expected | Pass |
+| 19 | Pagination | Create 11+ posts, scroll to bottom | Pagination controls appear and page through correctly | As expected | Pass |
+| 20 | Edit profile | Update bio, location and profile picture | Profile page reflects the new details and avatar immediately | As expected | Pass |
+| 21 | View another user's profile | Click a username/avatar | Their profile and posts load; "Edit Profile" button is hidden (not their own profile) | As expected | Pass |
+| 22 | 404 handling | Visit a non-existent URL | Custom 404 page shown, no stack trace | As expected | Pass |
+| 23 | Broken/forward navigation | Use browser Back/Forward after liking/commenting | Page state is still correct, no broken links or console errors | As expected | Pass |
+| 24 | Keyboard navigation | Tab through navbar, composer, like/comment buttons, modals | All interactive elements are reachable and usable via keyboard; focus is visible | As expected | Pass |
+| 25 | Screen reader labels | Inspect like/comment/delete buttons with a screen reader | Icon-only buttons announce their purpose (`aria-label`) rather than reading nothing | As expected | Pass |
+| 26 | Responsive layout | Resize viewport from desktop to mobile widths | Navbar collapses to a hamburger menu, sidebar hides on small screens, cards remain readable | As expected | Pass |
+| 27 | Secrets not exposed | Inspect repository and deployed source | No password or `SECRET_KEY` committed; `.env` is git-ignored; `DEBUG=False` in production | As expected | Pass |
+| 28 | Reserved username | Sign up with the username "edit" | Form shows "This username is reserved. Please choose another." | As expected | Pass |
+| 29 | Empty search | Search for a word that appears in no post or name | "No posts match ..." with a link back to all posts | As expected | Pass |
+| 30 | Return to post | Comment on or edit a post further down the feed | Page reopens at that post with a success message | As expected | Pass |
+| 31 | Avatar service unavailable | Block `ui-avatars.com` in DevTools (Network → Block request domain) and reload | Default avatar shown everywhere; no broken images | As expected | Pass |
+| 32 | Bootstrap CDN unavailable | Block `cdn.jsdelivr.net` and reload | Page still usable; comment panels open; no JavaScript errors in the console | As expected | Pass |
+| 33 | Password rules shown | Open the sign-up page | Password requirements are listed under the password field before submitting | As expected | Pass |
+| 34 | Live site matches development | Repeat tests 1–39 on the deployed Render site | Same behaviour as locally | _To record_ | _To record_ |
+| 35 | Back button after submitting | Submit a comment, then press Back | Buttons on the restored page work normally (not stuck on "Saving...") | As expected (restore simulated in Chromium; _confirm on the live site in Safari/Firefox_) | Pass |
+| 36 | Expired session | Sign out in another tab, then like a post | "Your session has expired. Please sign in again." | As expected | Pass |
+| 37 | Clear a chosen photo | Choose a photo in the composer, then cancel the selection | Label returns to "Photo" | As expected | Pass |
+| 38 | Delete through the dialog | With normal (not reduced) motion, open a post's "..." menu, choose Delete, then click Delete in the dialog; repeat for a comment | Post or comment is removed, with a confirmation message | As expected (Chromium, normal and reduced motion) | Pass |
+| 39 | Address that needs a button | While signed in, type `/accounts/logout/` into the address bar | Custom 405 page explaining that the action needs its button, with a link back to the feed | As expected | Pass |
 
 ---
 
@@ -232,6 +256,7 @@ during the final reviews.
 | Desktop layout (1280×900) | Chromium, signed in with sample data | Two-column layout; sidebar visible; no overlap |
 | Tablet layout (768×1024) | Chromium tablet emulation | Single column; hamburger menu; sidebar hidden; profile avatar overlaps the banner correctly; no horizontal scrolling |
 | Spacing | Measured the gaps between the composer and posts at 390, 768 and 1280px | An even 24px everywhere |
+| Delete dialogs | Checked which element receives a click on each dialog's Delete button, with normal and reduced motion | The Delete button itself in both modes; dialogs centred |
 | Mobile layout (390×844, iPhone 12-class) | Chromium mobile emulation | Single column; hamburger menu visible and working; **no horizontal scrolling** on feed or profile |
 | Keyboard | Tab from the post box | Focus moves to the photo input, which has a visible focus ring |
 | Back/forward navigation | Feed → profile → edit profile, then back twice and forward once | Pages reload correctly; no console errors |
@@ -246,15 +271,34 @@ Screenshots from these checks are in [`docs/screenshots/`](docs/screenshots/).
 ## 6. Production-configuration check
 
 Before deploying, the app was run locally with production settings
-(`DEBUG=False`, `CLOUDINARY_URL` set) to mirror Heroku:
+(`DEBUG=False`, `CLOUDINARY_URL` set):
 
 | Check | Command | Result |
 |---|---|---|
-| Django deployment checklist | `python manage.py check --deploy` | No issues (HSTS preload is deliberately off for a `herokuapp.com` domain; that check is silenced in `settings.py`) |
+| Django deployment checklist | `python manage.py check --deploy` | No issues (HSTS preload is deliberately off for a shared hosting domain such as `onrender.com`; that check is silenced in `settings.py`) |
 | Static files build | `python manage.py collectstatic --noinput` | Hashed, compressed manifest generated |
 | Image storage | Inspect the configured default storage | `MediaCloudinaryStorage` |
 | Migrations | `python manage.py migrate` | All migrations applied |
 | Production server | `gunicorn qorvli_project.wsgi` | Login page 200, CSS served by WhiteNoise, unknown URL returns the custom 404 |
+
+### Render deployment rehearsal
+
+The Render setup was rehearsed on a fresh clone against a real PostgreSQL 16
+database. The settings matched Render's: `DEBUG=False`, the
+`RENDER_EXTERNAL_HOSTNAME` and `PORT` variables, the admin variables, and no
+`ALLOWED_HOSTS` or `CSRF_TRUSTED_ORIGINS`.
+
+| Check | Result |
+|---|---|
+| `./build.sh`, first deploy | All migrations applied; `Superuser 'siteadmin' created.` |
+| `./build.sh`, redeploy | `No migrations to apply.`; `Superuser 'siteadmin' already exists.` |
+| `gunicorn qorvli_project.wsgi` (Render's start command) | Listens on `$PORT` (10000) automatically |
+| Login form posted from the Render address | Accepted (302 to the feed): the address is trusted automatically |
+| Login form posted from another site | Rejected with 403 (CSRF protection) |
+| `/admin/` as the created superuser | 200, admin dashboard shown |
+| Request for an unknown host | Rejected with 400 |
+| Plain HTTP request | 301 redirect to `https://` |
+| Cookies | Marked `Secure` |
 
 ---
 
@@ -290,6 +334,11 @@ Before deploying, the app was run locally with production settings
 | Submit buttons stayed disabled ("Saving...") on pages restored with the Back button. | JavaScript audit | Reset on `pageshow` from the back/forward cache. |
 | An expired session made liking show a generic error. | JavaScript audit | Specific "session has expired" message. |
 | Six avatars had empty `alt` text; no `<header>` landmark; error pages linked to a hard-coded `/`. | HTML audit | Descriptive alt text, `<header>` around the navbar, `{% url %}` links. |
+
+| **Posts and comments could not be deleted through the site.** The delete dialogs were inside the animated `<main>` and post cards, which placed them under Bootstrap's backdrop: for anyone without "reduce motion" enabled, clicking Delete hit the backdrop. Comment dialogs were also drawn off-centre. The automated tests send requests directly, so they didn't catch it. | Browser click test during the final audit | Dialogs are rendered in a `modals` block after `</main>`. Confirmed in Chromium with normal and reduced motion; a regression test checks the dialogs come after `</main>`. |
+| The delete dialogs used `aria-labelledby` without a `role` (24 W3C errors). | W3C checker 26.10.2 (the 2020 version had missed it) | `role="dialog"` added. |
+| Opening a POST-only address directly (e.g. an old bookmark to `/accounts/logout/`) showed a blank page. | Defensive testing | Middleware renders a custom 405 page, keeping the status and `Allow` header. |
+| While fixing the dialogs, a multi-line `{# #}` template comment was printed into the page (Django only supports single-line `{# #}`), creating stray `<main>` tags. | W3C validation, before the change was published | Replaced with `{% comment %}`; the regression test now also checks for a single `<main>`. |
 
 ---
 
