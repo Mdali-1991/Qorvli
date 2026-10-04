@@ -1,4 +1,5 @@
 """Views for registration, login/logout and user profiles."""
+
 from django.contrib import messages
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
@@ -33,19 +34,22 @@ class SignUpView(CreateView):
         response = super().form_valid(form)
         messages.success(
             self.request,
-            "Your QORVLI account has been created successfully. Please sign in.",
+            "Your QORVLI account has been created successfully. "
+            "Please sign in.",
         )
         return response
 
     def form_invalid(self, form):
         """Redisplay the form with a summary error message."""
-        messages.error(self.request, "Please correct the errors below and try again.")
+        messages.error(
+            self.request, "Please correct the errors below and try again."
+        )
         return super().form_invalid(form)
 
 
 @require_http_methods(["GET", "POST"])
 def login_view(request):
-    """Authenticate a user and redirect to ?next= (same site only) or the feed."""
+    """Log a user in, then go to ?next= (same site only) or the feed."""
     if request.user.is_authenticated:
         return redirect("posts:feed")
 
@@ -57,7 +61,10 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
-                messages.success(request, f"Welcome back, {user.first_name or user.username}!")
+                messages.success(
+                    request,
+                    f"Welcome back, {user.first_name or user.username}!",
+                )
                 # Only follow ?next= if it points back to this site,
                 # otherwise it could be used as an open redirect.
                 next_url = request.GET.get("next")
@@ -115,7 +122,9 @@ def profile_view(request, username):
 def edit_profile_view(request):
     """Let the signed-in user update their own profile."""
     if request.method == "POST":
-        form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
+        form = ProfileUpdateForm(
+            request.POST, request.FILES, instance=request.user
+        )
         if form.is_valid():
             form.save()
             messages.success(request, "Your profile has been updated.")

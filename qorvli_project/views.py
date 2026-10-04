@@ -1,4 +1,5 @@
 """Custom error pages used when DEBUG is False."""
+
 from django.shortcuts import render
 
 

@@ -1,4 +1,5 @@
 """Data model for QORVLI users."""
+
 from urllib.parse import quote
 
 from django.contrib.auth.models import AbstractUser
@@ -7,7 +8,7 @@ from django.urls import reverse
 
 
 class User(AbstractUser):
-    """Custom user model extending Django's AbstractUser with social profile fields."""
+    """Custom user model: Django's AbstractUser plus social profile fields."""
 
     bio = models.TextField(max_length=280, blank=True, default="")
     profile_picture = models.ImageField(
@@ -29,7 +30,7 @@ class User(AbstractUser):
 
     @property
     def profile_picture_url(self):
-        """Uploaded picture if there is one, otherwise a generated initials avatar."""
+        """Uploaded picture if set, otherwise a generated initials avatar."""
         if self.profile_picture and hasattr(self.profile_picture, "url"):
             return self.profile_picture.url
         return (

@@ -1,4 +1,5 @@
 """Data model for posts, comments and likes."""
+
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
@@ -8,16 +9,24 @@ class Post(models.Model):
     """A single post published by a user to the QORVLI feed."""
 
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="posts"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="posts",
     )
     content = models.TextField(max_length=2000)
-    image = models.ImageField(upload_to="post_images/", blank=True, null=True, default="")
+    image = models.ImageField(
+        upload_to="post_images/", blank=True, null=True, default=""
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-created_at"]
-        indexes = [models.Index(fields=["-created_at"], name="posts_post_created_at_idx")]
+        indexes = [
+            models.Index(
+                fields=["-created_at"], name="posts_post_created_at_idx"
+            )
+        ]
 
     def __str__(self):
         """Identify the post by id and author."""
@@ -41,9 +50,13 @@ class Post(models.Model):
 class Comment(models.Model):
     """A comment left by a user on a post."""
 
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, related_name="comments"
+    )
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="comments"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="comments",
     )
     content = models.CharField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -53,21 +66,30 @@ class Comment(models.Model):
 
     def __str__(self):
         """Identify the comment by id, author and post."""
-        return f"Comment #{self.pk} by {self.author.username} on Post #{self.post_id}"
+        return (
+            f"Comment #{self.pk} by {self.author.username} "
+            f"on Post #{self.post_id}"
+        )
 
 
 class Like(models.Model):
-    """A like relationship between a user and a post. Enforces one like per user per post."""
+    """A user's like on a post. Each user can like a given post only once."""
 
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="likes")
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, related_name="likes"
+    )
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="likes"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="likes",
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["post", "user"], name="unique_post_like_per_user")
+            models.UniqueConstraint(
+                fields=["post", "user"], name="unique_post_like_per_user"
+            )
         ]
         ordering = ["-created_at"]
 

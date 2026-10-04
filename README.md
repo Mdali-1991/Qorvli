@@ -359,9 +359,8 @@ flake8 .                                   # PEP8 style (settings in setup.cfg)
 python manage.py makemigrations --check    # no unapplied model changes
 ```
 
-**Code style:** Python follows PEP8, with one stated exception: the maximum
-line length is 100 characters instead of 79 (set in `setup.cfg`).
-Auto-generated `migrations/` are excluded.
+**Code style:** Python follows PEP8 with its default settings, including the
+79-character line limit. Auto-generated `migrations/` are excluded.
 
 ---
 

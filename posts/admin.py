@@ -1,4 +1,5 @@
 """Django admin configuration for posts, comments and likes."""
+
 from django.contrib import admin
 
 from .models import Post, Comment, Like
@@ -15,7 +16,13 @@ class CommentInline(admin.TabularInline):
 class PostAdmin(admin.ModelAdmin):
     """Post list with author, date and engagement counts."""
 
-    list_display = ("id", "author", "created_at", "like_count", "comment_count")
+    list_display = (
+        "id",
+        "author",
+        "created_at",
+        "like_count",
+        "comment_count",
+    )
     search_fields = ("content", "author__username")
     list_filter = ("created_at",)
     inlines = [CommentInline]

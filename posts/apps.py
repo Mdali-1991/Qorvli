@@ -1,4 +1,5 @@
 """App configuration for the posts app."""
+
 from django.apps import AppConfig
 
 
