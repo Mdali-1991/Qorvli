@@ -301,3 +301,48 @@ class LikeTests(TestCase):
         Like.objects.create(post=self.post, user=self.user)
         with self.assertRaises(Exception):
             Like.objects.create(post=self.post, user=self.user)
+
+
+class DefensiveRequestTests(TestCase):
+    """Wrong HTTP methods and invalid URL parameters never break a page."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="visitor", password="pass12345"
+        )
+        self.client.login(username="visitor", password="pass12345")
+        self.post = Post.objects.create(author=self.user, content="Hi")
+
+    def test_wrong_method_shows_custom_405_page(self):
+        url = reverse("posts:delete_post", kwargs={"pk": self.post.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 405)
+        self.assertTemplateUsed(response, "405.html")
+        self.assertEqual(response["Allow"], "POST")
+        self.assertTrue(Post.objects.filter(pk=self.post.pk).exists())
+
+    def test_wrong_method_for_ajax_is_left_unchanged(self):
+        url = reverse("posts:toggle_like", kwargs={"pk": self.post.pk})
+        response = self.client.get(url, HTTP_X_REQUESTED_WITH="XMLHttpRequest")
+        self.assertEqual(response.status_code, 405)
+        self.assertNotIn(b"<html", response.content)
+
+    def test_invalid_page_numbers_still_show_the_feed(self):
+        for page in ["abc", "-1", "99999"]:
+            response = self.client.get(reverse("posts:feed"), {"page": page})
+            self.assertEqual(response.status_code, 200, page)
+            self.assertContains(response, "Hi")
+
+    def test_missing_post_and_member_return_404(self):
+        self.assertEqual(
+            self.client.get(
+                reverse("posts:edit_post", kwargs={"pk": 999999})
+            ).status_code,
+            404,
+        )
+        self.assertEqual(
+            self.client.get(
+                reverse("accounts:profile", kwargs={"username": "nobody"})
+            ).status_code,
+            404,
+        )
