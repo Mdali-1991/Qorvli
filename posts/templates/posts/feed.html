@@ -100,27 +100,6 @@
                         </button>
                         {% endif %}
                     </div>
-
-                    {% if comment.author == user or post.author == user %}
-                    <div class="modal fade" id="deleteCommentModal-{{ comment.id }}" tabindex="-1" aria-labelledby="deleteCommentLabel-{{ comment.id }}" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content qorvli-modal">
-                                <div class="modal-header border-0">
-                                    <h2 class="modal-title h5" id="deleteCommentLabel-{{ comment.id }}">Delete Comment</h2>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">Are you sure you want to delete this comment? This cannot be undone.</div>
-                                <div class="modal-footer border-0">
-                                    <button type="button" class="btn qorvli-btn-ghost" data-bs-dismiss="modal">Cancel</button>
-                                    <form method="post" action="{% url 'posts:delete_comment' pk=comment.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn qorvli-btn-danger">Delete</button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
                     {% endfor %}
 
                     <form method="post" action="{% url 'posts:add_comment' pk=post.id %}" class="qorvli-comment-form">
@@ -134,26 +113,6 @@
                 </div>
             </article>
 
-            {% if post.author == user %}
-            <div class="modal fade" id="deletePostModal-{{ post.id }}" tabindex="-1" aria-labelledby="deletePostLabel-{{ post.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content qorvli-modal">
-                        <div class="modal-header border-0">
-                            <h2 class="modal-title h5" id="deletePostLabel-{{ post.id }}">Delete Post</h2>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">Are you sure you want to delete this post? This action cannot be undone.</div>
-                        <div class="modal-footer border-0">
-                            <button type="button" class="btn qorvli-btn-ghost" data-bs-dismiss="modal">Cancel</button>
-                            <form method="post" action="{% url 'posts:delete_post' pk=post.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn qorvli-btn-danger">Delete</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
 
             {% empty %}
             <div class="qorvli-empty-state">
@@ -199,4 +158,54 @@
         </div>
     </aside>
 </div>
+{% endblock %}
+
+{% block modals %}
+{# Delete-confirmation dialogs are rendered here, outside <main>: the
+   animated <main> and post cards would otherwise trap them underneath
+   Bootstrap's backdrop, making the Delete button unclickable. #}
+{% for post in posts %}
+{% for comment in post.comments.all %}
+{% if comment.author == user or post.author == user %}
+<div class="modal fade" id="deleteCommentModal-{{ comment.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteCommentLabel-{{ comment.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content qorvli-modal">
+            <div class="modal-header border-0">
+                <h2 class="modal-title h5" id="deleteCommentLabel-{{ comment.id }}">Delete Comment</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">Are you sure you want to delete this comment? This cannot be undone.</div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn qorvli-btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'posts:delete_comment' pk=comment.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn qorvli-btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% if post.author == user %}
+<div class="modal fade" id="deletePostModal-{{ post.id }}" tabindex="-1" role="dialog" aria-labelledby="deletePostLabel-{{ post.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content qorvli-modal">
+            <div class="modal-header border-0">
+                <h2 class="modal-title h5" id="deletePostLabel-{{ post.id }}">Delete Post</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">Are you sure you want to delete this post? This action cannot be undone.</div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn qorvli-btn-ghost" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'posts:delete_post' pk=post.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn qorvli-btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
 {% endblock %}

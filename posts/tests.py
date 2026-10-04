@@ -346,3 +346,23 @@ class DefensiveRequestTests(TestCase):
             ).status_code,
             404,
         )
+
+
+class DeleteDialogPlacementTests(TestCase):
+    """Delete dialogs must sit outside <main>, or the animated layout traps
+    them under Bootstrap's backdrop and the Delete button can't be clicked.
+    """
+
+    def test_delete_dialogs_are_rendered_after_main(self):
+        owner = User.objects.create_user(username="owner", password="pw12345x")
+        post = Post.objects.create(author=owner, content="Mine")
+        comment = Comment.objects.create(post=post, author=owner, content="c")
+        self.client.login(username="owner", password="pw12345x")
+        html = self.client.get(reverse("posts:feed")).content.decode()
+        main_end = html.index("</main>")
+        self.assertGreater(
+            html.index(f'id="deletePostModal-{post.pk}"'), main_end
+        )
+        self.assertGreater(
+            html.index(f'id="deleteCommentModal-{comment.pk}"'), main_end
+        )
