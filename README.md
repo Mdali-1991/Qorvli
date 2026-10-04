@@ -95,7 +95,7 @@ How each story is met is tested in
 | Like/unlike via AJAX with live counter | US10 | `toggle_like_view`, `static/js/main.js` |
 | Search posts and members, with paginated results | US11 | `feed_view` |
 | Flash messages for every action, spinners while forms submit | US12 | `templates/base.html`, `main.js` |
-| Custom 403, 404 and 500 pages with a link back to the feed | US12, US13 | `templates/`, `qorvli_project/views.py` |
+| Custom 403, 404, 405 and 500 pages with a link back to the feed | US12, US13 | `templates/`, `qorvli_project/views.py`, `qorvli_project/middleware.py` |
 | Django admin for moderators | US14 | `accounts/admin.py`, `posts/admin.py` |
 
 ### Screenshots
@@ -375,12 +375,65 @@ and a log of every bug found with its fix.
 
 ```bash
 python manage.py test                      # automated tests
-flake8 .                                   # PEP8 style (settings in setup.cfg)
+flake8 .                                   # PEP8 style and unused code
 python manage.py makemigrations --check    # no unapplied model changes
 ```
 
 **Code style:** Python follows PEP8 with its default settings, including the
 79-character line limit. Auto-generated `migrations/` are excluded.
+
+### Validation results
+
+| Language | Tool | Result |
+|---|---|---|
+| HTML | W3C Nu HTML Checker 26.10.2, 17 pages | No errors or warnings |
+| CSS | W3C Nu checker (CSS mode) 26.10.2, `style.css` | No errors or warnings |
+| JavaScript | JSHint 2.13.6, `main.js` | No warnings (default and strict settings) |
+| Python | pycodestyle 2.15 (PEP8 defaults) and flake8 7.4 | No issues |
+
+The checks were run with the official checker software on a local
+machine, because validator.w3.org and jigsaw.w3.org could not be reached
+from the environment used. Pages behind the login were rendered with
+sample data and pasted in as text, which is also how they must be checked
+online. Details, and the errors fixed to reach these results, are in
+[`TESTING.md`](TESTING.md#2-code-validation).
+
+**CSS:**
+
+![W3C result for style.css: no errors or warnings](docs/validation/css-style.png)
+
+**JavaScript:**
+
+![JSHint output for main.js: 0 warnings](docs/validation/jshint-main-js.png)
+
+**Python:**
+
+![pycodestyle and flake8 output: 0 issues](docs/validation/pep8-python.png)
+
+<details>
+<summary><strong>HTML: W3C results for all 17 pages</strong> (click to expand)</summary>
+
+| Page | Result |
+|---|---|
+| Login | ![W3C result: Login](docs/validation/html-login.png) |
+| Login with errors | ![W3C result: Login with errors](docs/validation/html-login-error.png) |
+| Sign-up | ![W3C result: Sign-up](docs/validation/html-signup.png) |
+| Sign-up with errors | ![W3C result: Sign-up with errors](docs/validation/html-signup-error.png) |
+| Feed | ![W3C result: Feed](docs/validation/html-feed.png) |
+| Feed, page 2 of a search | ![W3C result: Feed, page 2 of a search](docs/validation/html-feed-page2-search.png) |
+| Search with no results | ![W3C result: Search with no results](docs/validation/html-feed-empty-search.png) |
+| Own profile | ![W3C result: Own profile](docs/validation/html-profile-own.png) |
+| Another member's profile | ![W3C result: Another member's profile](docs/validation/html-profile-other.png) |
+| Edit profile | ![W3C result: Edit profile](docs/validation/html-edit-profile.png) |
+| Edit profile with errors | ![W3C result: Edit profile with errors](docs/validation/html-edit-profile-error.png) |
+| Edit post | ![W3C result: Edit post](docs/validation/html-edit-post.png) |
+| Edit post with errors | ![W3C result: Edit post with errors](docs/validation/html-edit-post-error.png) |
+| 403 page | ![W3C result: 403 page](docs/validation/html-403.png) |
+| 404 page | ![W3C result: 404 page](docs/validation/html-404.png) |
+| 405 page | ![W3C result: 405 page](docs/validation/html-405.png) |
+| 500 page | ![W3C result: 500 page](docs/validation/html-500.png) |
+
+</details>
 
 ---
 

@@ -215,3 +215,28 @@ class EnsureSuperuserCommandTests(TestCase):
             output = self.run_command()
         self.assertFalse(User.objects.exists())
         self.assertIn("skipping", output)
+
+
+class AdminAccessTests(TestCase):
+    """Only staff can reach the Django admin used for moderation (US14)."""
+
+    def test_staff_can_manage_users_posts_comments_and_likes(self):
+        User.objects.create_superuser(
+            username="moderator", email="m@example.com", password="pw12345x"
+        )
+        self.client.login(username="moderator", password="pw12345x")
+        for url in [
+            "/admin/",
+            "/admin/accounts/user/",
+            "/admin/posts/post/",
+            "/admin/posts/comment/",
+            "/admin/posts/like/",
+        ]:
+            self.assertEqual(self.client.get(url).status_code, 200, url)
+
+    def test_ordinary_member_is_refused(self):
+        User.objects.create_user(username="member", password="pw12345x")
+        self.client.login(username="member", password="pw12345x")
+        response = self.client.get("/admin/posts/post/")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/admin/login/", response["Location"])
