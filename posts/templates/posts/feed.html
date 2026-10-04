@@ -161,9 +161,11 @@
 {% endblock %}
 
 {% block modals %}
-{# Delete-confirmation dialogs are rendered here, outside <main>: the
-   animated <main> and post cards would otherwise trap them underneath
-   Bootstrap's backdrop, making the Delete button unclickable. #}
+{% comment %}
+Delete-confirmation dialogs are rendered here, after the main element:
+inside the animated main element and post cards they were trapped under
+Bootstrap's backdrop, which made the Delete button unclickable.
+{% endcomment %}
 {% for post in posts %}
 {% for comment in post.comments.all %}
 {% if comment.author == user or post.author == user %}

@@ -359,6 +359,8 @@ class DeleteDialogPlacementTests(TestCase):
         comment = Comment.objects.create(post=post, author=owner, content="c")
         self.client.login(username="owner", password="pw12345x")
         html = self.client.get(reverse("posts:feed")).content.decode()
+        self.assertEqual(html.count("<main"), 1)
+        self.assertNotIn("Delete-confirmation dialogs", html)
         main_end = html.index("</main>")
         self.assertGreater(
             html.index(f'id="deletePostModal-{post.pk}"'), main_end
