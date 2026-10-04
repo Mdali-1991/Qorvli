@@ -1,6 +1,7 @@
 """
 Django settings for the QORVLI project.
 """
+
 import sys
 from pathlib import Path
 
@@ -65,7 +66,9 @@ ASGI_APPLICATION = "qorvli_project.asgi.application"
 
 DATABASES = {
     "default": dj_database_url.config(
-        default=env("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"),
+        default=env(
+            "DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+        ),
         conn_max_age=600,
         conn_health_checks=True,
     )
@@ -73,14 +76,15 @@ DATABASES = {
 
 AUTH_USER_MODEL = "accounts.User"
 
+PASSWORD_VALIDATION = "django.contrib.auth.password_validation."
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": PASSWORD_VALIDATION + "UserAttributeSimilarityValidator"},
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME": PASSWORD_VALIDATION + "MinimumLengthValidator",
         "OPTIONS": {"min_length": 8},
     },
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {"NAME": PASSWORD_VALIDATION + "CommonPasswordValidator"},
+    {"NAME": PASSWORD_VALIDATION + "NumericPasswordValidator"},
 ]
 
 LANGUAGE_CODE = "en-us"

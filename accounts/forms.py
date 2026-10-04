@@ -1,4 +1,5 @@
 """Forms for signing up, logging in and editing a user profile."""
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
@@ -16,30 +17,49 @@ class SignUpForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(
-            attrs={"class": "form-control qorvli-input", "placeholder": "you@example.com"}
+            attrs={
+                "class": "form-control qorvli-input",
+                "placeholder": "you@example.com",
+            }
         ),
     )
     first_name = forms.CharField(
         required=True,
         max_length=150,
         widget=forms.TextInput(
-            attrs={"class": "form-control qorvli-input", "placeholder": "First name"}
+            attrs={
+                "class": "form-control qorvli-input",
+                "placeholder": "First name",
+            }
         ),
     )
     last_name = forms.CharField(
         required=True,
         max_length=150,
         widget=forms.TextInput(
-            attrs={"class": "form-control qorvli-input", "placeholder": "Last name"}
+            attrs={
+                "class": "form-control qorvli-input",
+                "placeholder": "Last name",
+            }
         ),
     )
 
     class Meta:
         model = User
-        fields = ("username", "first_name", "last_name", "email", "password1", "password2")
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "password1",
+            "password2",
+        )
         widgets = {
             "username": forms.TextInput(
-                attrs={"class": "form-control qorvli-input", "placeholder": "Choose a username"}
+                attrs={
+                    "class": "form-control qorvli-input",
+                    "placeholder": "Choose a username",
+                }
             ),
         }
 
@@ -50,14 +70,19 @@ class SignUpForm(UserCreationForm):
             {"class": "form-control qorvli-input", "placeholder": "Password"}
         )
         self.fields["password2"].widget.attrs.update(
-            {"class": "form-control qorvli-input", "placeholder": "Confirm password"}
+            {
+                "class": "form-control qorvli-input",
+                "placeholder": "Confirm password",
+            }
         )
 
     def clean_username(self):
         """Reject usernames that collide with fixed profile URLs."""
         username = super().clean_username()
         if username.lower() in RESERVED_USERNAMES:
-            raise ValidationError("This username is reserved. Please choose another.")
+            raise ValidationError(
+                "This username is reserved. Please choose another."
+            )
         return username
 
     def clean_email(self):
@@ -92,7 +117,10 @@ class LoginForm(forms.Form):
     )
     password = forms.CharField(
         widget=forms.PasswordInput(
-            attrs={"class": "form-control qorvli-input", "placeholder": "Password"}
+            attrs={
+                "class": "form-control qorvli-input",
+                "placeholder": "Password",
+            }
         )
     )
 
@@ -102,23 +130,41 @@ class ProfileUpdateForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ("first_name", "last_name", "bio", "location", "profile_picture")
+        fields = (
+            "first_name",
+            "last_name",
+            "bio",
+            "location",
+            "profile_picture",
+        )
         widgets = {
-            "first_name": forms.TextInput(attrs={"class": "form-control qorvli-input"}),
-            "last_name": forms.TextInput(attrs={"class": "form-control qorvli-input"}),
+            "first_name": forms.TextInput(
+                attrs={"class": "form-control qorvli-input"}
+            ),
+            "last_name": forms.TextInput(
+                attrs={"class": "form-control qorvli-input"}
+            ),
             "bio": forms.Textarea(
                 attrs={
                     "class": "form-control qorvli-input",
                     "rows": 3,
                     "maxlength": 280,
-                    "placeholder": "Tell the world about yourself (280 characters max)",
+                    "placeholder": (
+                        "Tell the world about yourself (280 characters max)"
+                    ),
                 }
             ),
             "location": forms.TextInput(
-                attrs={"class": "form-control qorvli-input", "placeholder": "City, Country"}
+                attrs={
+                    "class": "form-control qorvli-input",
+                    "placeholder": "City, Country",
+                }
             ),
             "profile_picture": forms.ClearableFileInput(
-                attrs={"class": "form-control qorvli-input", "accept": "image/*"}
+                attrs={
+                    "class": "form-control qorvli-input",
+                    "accept": "image/*",
+                }
             ),
         }
 
@@ -135,5 +181,7 @@ class ProfileUpdateForm(forms.ModelForm):
         if picture and hasattr(picture, "size"):
             max_size_mb = 5
             if picture.size > max_size_mb * 1024 * 1024:
-                raise ValidationError(f"Image file too large ( > {max_size_mb}MB ).")
+                raise ValidationError(
+                    f"Image file too large ( > {max_size_mb}MB )."
+                )
         return picture

@@ -1,3 +1,6 @@
+/* jshint esversion: 6, browser: true */
+/* global bootstrap */
+
 /**
  * QORVLI main.js
  * Handles AJAX like toggling, comment panel expansion, and small UX polish.
@@ -42,6 +45,22 @@ document.addEventListener("DOMContentLoaded", function () {
     initSubmitSpinners();
     initScrollReveal();
     initAvatarFallbacks();
+});
+
+/**
+ * When the browser restores a page from its back/forward cache, submit
+ * buttons can still be disabled and showing "Saving..." from the earlier
+ * submission. Put them back to normal so the form can be used again.
+ */
+window.addEventListener("pageshow", function (event) {
+    if (!event.persisted) return;
+    document.querySelectorAll("button[aria-busy='true']").forEach(function (btn) {
+        if (btn.dataset.originalHtml) {
+            btn.innerHTML = btn.dataset.originalHtml;
+        }
+        btn.disabled = false;
+        btn.removeAttribute("aria-busy");
+    });
 });
 
 /**
@@ -155,6 +174,11 @@ function initLikeButtons() {
                 },
             })
                 .then(function (response) {
+                    // An expired session is redirected to the login page,
+                    // which returns HTML rather than JSON.
+                    if (response.redirected) {
+                        throw new Error("session-expired");
+                    }
                     if (!response.ok) {
                         throw new Error("Network response was not ok");
                     }
@@ -164,18 +188,16 @@ function initLikeButtons() {
                     const icon = button.querySelector("i");
                     const countSpan = button.querySelector(".qorvli-like-count");
 
-                    countSpan.textContent = data.like_count;
+                    if (countSpan) {
+                        countSpan.textContent = data.like_count;
+                    }
                     button.setAttribute("aria-pressed", data.liked ? "true" : "false");
                     button.setAttribute("aria-label", data.liked ? "Unlike this post" : "Like this post");
 
-                    if (data.liked) {
-                        button.classList.add("liked");
-                        icon.classList.remove("bi-heart");
-                        icon.classList.add("bi-heart-fill");
-                    } else {
-                        button.classList.remove("liked");
-                        icon.classList.remove("bi-heart-fill");
-                        icon.classList.add("bi-heart");
+                    button.classList.toggle("liked", data.liked);
+                    if (icon) {
+                        icon.classList.toggle("bi-heart-fill", data.liked);
+                        icon.classList.toggle("bi-heart", !data.liked);
                     }
 
                     button.classList.add("pop");
@@ -183,8 +205,12 @@ function initLikeButtons() {
                         button.classList.remove("pop");
                     }, 300);
                 })
-                .catch(function () {
-                    showToast("Something went wrong. Please try again.", "danger");
+                .catch(function (error) {
+                    if (error.message === "session-expired") {
+                        showToast("Your session has expired. Please sign in again.", "warning");
+                    } else {
+                        showToast("Something went wrong. Please try again.", "danger");
+                    }
                 })
                 .finally(function () {
                     button.disabled = false;
@@ -198,36 +224,26 @@ function initLikeButtons() {
  */
 function initCommentToggles() {
     document.querySelectorAll(".qorvli-comment-toggle").forEach(function (button) {
-        button.addEventListener("click", function () {
-            const targetSelector = button.getAttribute("data-target");
-            const target = document.querySelector(targetSelector);
-            if (!target) return;
+        const targetSelector = button.getAttribute("data-target");
+        const target = targetSelector ? document.querySelector(targetSelector) : null;
+        if (!target) return;
 
+        // Keep the button's aria-expanded state in sync for screen readers.
+        target.addEventListener("shown.bs.collapse", function () {
+            button.setAttribute("aria-expanded", "true");
+        });
+        target.addEventListener("hidden.bs.collapse", function () {
+            button.setAttribute("aria-expanded", "false");
+        });
+
+        button.addEventListener("click", function () {
             if (!hasBootstrap()) {
                 // Without Bootstrap, toggle the panel's visibility directly.
                 const isOpen = target.classList.toggle("show");
                 button.setAttribute("aria-expanded", isOpen ? "true" : "false");
                 return;
             }
-
-            const bsCollapse = bootstrap.Collapse.getOrCreateInstance(target, { toggle: false });
-            bsCollapse.toggle();
-
-            // Keep the button's aria-expanded state in sync for screen readers.
-            target.addEventListener(
-                "shown.bs.collapse",
-                function () {
-                    button.setAttribute("aria-expanded", "true");
-                },
-                { once: true }
-            );
-            target.addEventListener(
-                "hidden.bs.collapse",
-                function () {
-                    button.setAttribute("aria-expanded", "false");
-                },
-                { once: true }
-            );
+            bootstrap.Collapse.getOrCreateInstance(target, { toggle: false }).toggle();
         });
     });
 }
@@ -237,15 +253,15 @@ function initCommentToggles() {
  */
 function initFileLabels() {
     document.querySelectorAll(".qorvli-file-label input[type='file']").forEach(function (input) {
+        const label = input.closest(".qorvli-file-label");
+        const labelText = label ? label.querySelector(".qorvli-file-label-text") : null;
+        if (!labelText) return;
+        const defaultText = labelText.textContent;
+
         input.addEventListener("change", function () {
-            const label = input.closest(".qorvli-file-label");
-            if (input.files && input.files.length > 0) {
-                label.classList.add("has-file");
-                const labelText = label.querySelector(".qorvli-file-label-text");
-                if (labelText) {
-                    labelText.textContent = input.files[0].name;
-                }
-            }
+            const hasFile = Boolean(input.files && input.files.length > 0);
+            label.classList.toggle("has-file", hasFile);
+            labelText.textContent = hasFile ? input.files[0].name : defaultText;
         });
     });
 }

@@ -8,7 +8,7 @@ with full create, read, update and delete (CRUD) functionality.
 
 **Live site:** _add your Heroku URL here after deploying_
 
-![QORVLI shown on a laptop (the feed) and a phone (a member's profile)](docs/screenshots/hero.png)
+![QORVLI on a laptop (the feed), a tablet (a member's profile) and a phone (the feed)](docs/screenshots/hero.png)
 
 ## Contents
 
@@ -100,13 +100,21 @@ How each story is met is tested in
 
 ### Screenshots
 
-| Desktop | Mobile |
+Screenshots of the working application at desktop (1280px), tablet (768px)
+and mobile (390px) widths.
+
+| Desktop | Tablet | Mobile |
+|---|---|---|
+| ![Feed on desktop](docs/screenshots/feed-desktop.png) | ![Feed on tablet](docs/screenshots/feed-tablet.png) | ![Feed on mobile](docs/screenshots/feed-mobile.png) |
+| ![Profile on desktop](docs/screenshots/profile-desktop.png) | ![Profile on tablet](docs/screenshots/profile-tablet.png) | ![Profile on mobile](docs/screenshots/profile-mobile.png) |
+
+| Feature | Screenshot |
 |---|---|
-| ![Post with comments](docs/screenshots/post-comments-desktop.png) | ![Feed on mobile](docs/screenshots/feed-mobile.png) |
-| ![Profile page](docs/screenshots/profile-desktop.png) | ![Profile on mobile](docs/screenshots/profile-mobile.png) |
-| ![Search results](docs/screenshots/search-desktop.png) | ![Mobile menu](docs/screenshots/menu-mobile.png) |
-| ![Delete confirmation](docs/screenshots/delete-confirm-desktop.png) | |
-| ![Login page](docs/screenshots/login.png) | |
+| Comments under a post | ![Post with comments](docs/screenshots/post-comments-desktop.png) |
+| Search results | ![Search results](docs/screenshots/search-desktop.png) |
+| Delete confirmation | ![Delete confirmation modal](docs/screenshots/delete-confirm-desktop.png) |
+| Mobile navigation menu | ![Mobile menu open](docs/screenshots/menu-mobile.png) |
+| Login page | ![Login page](docs/screenshots/login.png) |
 
 ### Possible future features
 
@@ -121,18 +129,31 @@ How each story is met is tested in
 
 ### Wireframes
 
-Wireframes for the main screens are in [`docs/wireframes/`](docs/wireframes/):
+Wireframes for the main screens were drawn before building the pages and
+are kept in [`docs/wireframes/`](docs/wireframes/).
 
-- [`01-feed-wireframe.svg`](docs/wireframes/01-feed-wireframe.svg): navbar
-  with search, a post composer, post cards with like/comment actions, and a
-  "suggested users" sidebar on wide screens.
-- [`02-profile-wireframe.svg`](docs/wireframes/02-profile-wireframe.svg):
-  banner, avatar, bio and details, an edit button (owner only), and that
-  user's posts.
-- [`03-auth-wireframe.svg`](docs/wireframes/03-auth-wireframe.svg): login
-  and sign-up screens, showing where validation errors appear.
-- [`04-mobile-responsive-wireframe.svg`](docs/wireframes/04-mobile-responsive-wireframe.svg):
-  the single-column layout with a hamburger menu below the 992px breakpoint.
+**Feed:** navbar with search, the post composer, post cards with like and
+comment actions, and a "Suggested for you" sidebar on wide screens.
+
+![Feed wireframe](docs/wireframes/01-feed-wireframe.svg)
+
+**Profile:** banner, avatar, bio and details, an Edit Profile button shown
+only to the owner, and that member's posts.
+
+![Profile wireframe](docs/wireframes/02-profile-wireframe.svg)
+
+**Login and sign-up:** single-column forms, showing where validation
+errors appear.
+
+![Login and sign-up wireframe](docs/wireframes/03-auth-wireframe.svg)
+
+**Mobile:** below the 992px breakpoint the layout becomes one column, the
+search box moves into the hamburger menu and the sidebar is hidden.
+
+![Mobile wireframe](docs/wireframes/04-mobile-responsive-wireframe.svg)
+
+The finished pages follow these layouts; compare them with the
+[screenshots](#screenshots) above.
 
 ### Design principles applied
 
@@ -169,7 +190,6 @@ Wireframes for the main screens are in [`docs/wireframes/`](docs/wireframes/):
 | The "Suggested for you" sidebar is hidden below 992px. | On phones it would push the feed, the main content, far down the page. |
 | Comments can't be edited, only deleted. | Comments are short; delete-and-repost keeps the data model and UI simple. Listed as a future feature. |
 | Members can't edit other members' content, and site staff moderate through the Django admin rather than in the main UI. | Keeps the member interface simple and makes permission checks easy to reason about. |
-| `backdrop-filter` is used for the frosted-glass panels. | It keeps text readable over content scrolling under the sticky navbar. It works in all current browsers but is not recognised by every CSS validator (see `TESTING.md`). |
 | `README.md`, `TESTING.md`, `LICENSE` and `Procfile` contain capitals. | These names are conventions that GitHub and Heroku look for (Heroku requires exactly `Procfile`). All other files and folders are lower-case with no spaces. |
 
 ---
@@ -359,9 +379,8 @@ flake8 .                                   # PEP8 style (settings in setup.cfg)
 python manage.py makemigrations --check    # no unapplied model changes
 ```
 
-**Code style:** Python follows PEP8, with one stated exception: the maximum
-line length is 100 characters instead of 79 (set in `setup.cfg`).
-Auto-generated `migrations/` are excluded.
+**Code style:** Python follows PEP8 with its default settings, including the
+79-character line limit. Auto-generated `migrations/` are excluded.
 
 ---
 

@@ -43,30 +43,116 @@ python manage.py test
 
 ## 2. Code validation
 
-| Tool | Scope | Result |
-|---|---|---|
-| `flake8` (PEP8; `setup.cfg` allows 100-character lines) | All Python files except migrations | **No issues** |
-| `python manage.py makemigrations --check` | Models vs migrations | **No changes detected** |
-| W3C Nu HTML Checker (`vnu.jar`, the engine behind [validator.w3.org/nu](https://validator.w3.org/nu/)) | 16 rendered pages: login, login with errors, sign-up, sign-up with errors, feed, feed page 2 with search, empty search, own profile, another profile, edit profile, edit profile with errors, edit post, edit post with errors, 403, 404, 500 | **0 errors, 0 warnings** |
-| [JSHint](https://jshint.com/) 2.13 (`esversion: 11`, `browser`, `undef`, `unused`, `bootstrap` declared as a global) | `static/js/main.js` | **No warnings** |
-| W3C CSS checker (the CSS mode of the Nu checker) | `static/css/style.css` | Only the two expected items below |
-| [W3C CSS Validator (Jigsaw)](https://jigsaw.w3.org/css-validator/) | `static/css/style.css` | _To record: run by direct input and save a screenshot to `docs/`_ |
-| Lighthouse (Chrome DevTools) | Feed and profile, desktop and mobile | _To record on the deployed site_ |
+### Summary
 
-The pages were rendered with realistic data (posts with images, comments,
-likes, pagination) by the Django test client, so pages behind the login were
-validated as well. To repeat this on the live site, open each page, use
-"View page source", and paste it into
-[validator.w3.org/nu](https://validator.w3.org/nu/#textarea).
+| Language | Tool | Scope | Result |
+|---|---|---|---|
+| HTML | W3C Nu HTML Checker | 16 rendered pages | **0 errors, 0 warnings, 0 info messages** |
+| CSS | W3C CSS checker (CSS mode of the Nu checker) | `static/css/style.css` | **0 errors, 0 warnings** |
+| JavaScript | JSHint 2.13 | `static/js/main.js` | **0 warnings** (default and strict settings) |
+| Python | `pycodestyle` and `flake8` with default PEP8 settings | All `.py` files except auto-generated migrations | **0 issues** |
 
-**Expected CSS validator messages:**
-- `backdrop-filter`: a current property (CSS Filter Effects Level 2)
-  supported by all major browsers, used deliberately for the frosted-glass
-  panels; some validator versions don't recognise it yet. This is described
-  in the README's design decisions.
-- `var(--...)` inside `linear-gradient()` and `box-shadow`: CSS custom
-  properties can't be checked statically. Jigsaw reports these as warnings,
-  not errors.
+The online validators at validator.w3.org and jigsaw.w3.org were blocked by
+the network policy of the environment used for this audit. The HTML and CSS
+were therefore checked with `vnu.jar`, the official W3C Nu checker that
+runs [validator.w3.org/nu](https://validator.w3.org/nu/), installed locally.
+The live-site checks below are still to be recorded.
+
+### HTML (W3C Nu HTML Checker)
+
+The Django test client rendered every page with realistic data (posts
+with images, comments, likes, pagination) as a signed-in member, so pages
+behind the login were validated too:
+
+| Page | Result | Page | Result |
+|---|---|---|---|
+| Login | Pass | Own profile | Pass |
+| Login with errors | Pass | Another member's profile | Pass |
+| Sign-up | Pass | Edit profile | Pass |
+| Sign-up with errors | Pass | Edit profile with errors | Pass |
+| Feed | Pass | Edit post | Pass |
+| Feed page 2 with a search | Pass | Edit post with errors | Pass |
+| Search with no results | Pass | 403, 404, 500 | Pass |
+
+A separate check confirmed every element is closed and correctly nested,
+and every `<img>` has descriptive `alt` text.
+
+**Fixed during validation:**
+- Form inputs pointed `aria-describedby` at help-text and error elements
+  that weren't rendered (W3C errors on sign-up and the edit pages). Each
+  field now renders them with the matching ids.
+- Posts on the profile page had no heading ("article lacks heading").
+- Six avatars had empty `alt=""`; all now describe whose picture it is.
+- The navigation wasn't inside a `<header>` landmark.
+- The error pages linked home with a hard-coded `/` rather than
+  `{% url 'posts:feed' %}`.
+
+**To check on the live site:** open each page, choose "View page source",
+and paste it into [validator.w3.org/nu](https://validator.w3.org/nu/#textarea)
+(direct input). Logged-in pages can't be checked by URL. _Record results
+and screenshots here._
+
+### CSS (W3C CSS checker)
+
+**Result:** 0 errors and 0 warnings for `static/css/style.css`.
+
+**Fixed during validation (10 errors before):**
+- 6 errors from CSS custom properties (`var(--…)`) inside
+  `linear-gradient()` and a multi-part `box-shadow`, which validators
+  can't check. These now use the literal colour values.
+- 4 errors for `backdrop-filter`, which validators don't recognise. It
+  was removed: on cards and messages it only blurred the plain page
+  gradient, and the sticky navbar is now 94% opaque instead.
+
+**Also cleaned up:** the stylesheet was reorganised into commented
+sections with one declaration per line. Rules split across the file were
+merged, and an unused class, an unused variable and redundant selectors
+were removed. Before/after screenshots of 9 pages at 390, 768 and 1280px
+showed no visible change.
+
+**To check:** paste the file into the
+[W3C CSS Validator (Jigsaw)](https://jigsaw.w3.org/css-validator/#validate_by_input)
+and save a screenshot. _Record the result here._
+
+### JavaScript (JSHint)
+
+| Setting | Result |
+|---|---|
+| Default settings, as when pasting into [jshint.com](https://jshint.com/) (the file declares `esversion: 6` and the `bootstrap` global inline) | 0 warnings |
+| Strict: `undef` and `unused` enabled | 0 warnings |
+| `node --check` (syntax) | Pass |
+
+There are no `console.log` statements. Every `fetch` has error handling
+that shows the user a message.
+
+**Fixed during the audit:**
+- A missing icon or count element could have turned a successful like
+  into a "Something went wrong" message. The lookups are now guarded.
+- When a session expired, liking showed a generic error. It now says
+  "Your session has expired. Please sign in again."
+- Pages restored with the browser's Back button could leave submit
+  buttons disabled showing "Saving...". They're now reset.
+- Comment toggles registered new listeners on every click, and file
+  labels didn't reset when a chosen file was cleared. Both are fixed.
+
+### Python (PEP8)
+
+| Check | Result |
+|---|---|
+| `pycodestyle --config=/dev/null` (pure PEP8 defaults, as used by the [CI Python Linter](https://pep8ci.herokuapp.com/)) | 0 issues |
+| `flake8` (PEP8 plus unused imports and variables) | 0 issues |
+| `python manage.py makemigrations --check` | No changes detected |
+
+**Fixed during validation:** 98 lines were longer than the PEP8 limit of
+79 characters, so the project had relied on a 100-character exception.
+The code was reformatted with `black` at 79 columns, and long docstrings
+and strings were wrapped by hand. The exception was then removed from
+`setup.cfg`. Auto-generated migrations are excluded.
+
+### Lighthouse
+
+_To record on the deployed site:_ performance, accessibility, best
+practices and SEO for the feed and a profile, on desktop and mobile.
 
 ---
 
@@ -94,8 +180,8 @@ validated as well. To repeat this on the live site, open each page, use
 ## 4. Manual testing
 
 Tests 1–27 were carried out on desktop Chrome, mobile Chrome (DevTools
-device emulation) and keyboard-only navigation. Tests 28–34 were added
-during the final review.
+device emulation) and keyboard-only navigation. Tests 28–37 were added
+during the final reviews.
 
 | # | Test case | Steps | Expected result | Result |
 |---|---|---|---|---|
@@ -132,7 +218,10 @@ during the final review.
 | 31 | Avatar service unavailable | Block `ui-avatars.com` in DevTools (Network → Block request domain) and reload | Default avatar shown everywhere; no broken images | Pass |
 | 32 | Bootstrap CDN unavailable | Block `cdn.jsdelivr.net` and reload | Page still usable; comment panels open; no JavaScript errors in the console | Pass |
 | 33 | Password rules shown | Open the sign-up page | Password requirements are listed under the password field before submitting | Pass |
-| 34 | Live site matches development | Repeat tests 1–33 on the deployed Heroku site | Same behaviour as locally | _To record after deployment_ |
+| 34 | Live site matches development | Repeat tests 1–37 on the deployed Heroku site | Same behaviour as locally | _To record after deployment_ |
+| 35 | Back button after submitting | Submit a comment, then press Back | Buttons on the restored page work normally (not stuck on "Saving...") | Pass (restore simulated in Chromium; _confirm on the live site in Safari/Firefox_) |
+| 36 | Expired session | Sign out in another tab, then like a post | "Your session has expired. Please sign in again." | Pass |
+| 37 | Clear a chosen photo | Choose a photo in the composer, then cancel the selection | Label returns to "Photo" | Pass |
 
 ---
 
@@ -141,6 +230,8 @@ during the final review.
 | Check | How | Result |
 |---|---|---|
 | Desktop layout (1280×900) | Chromium, signed in with sample data | Two-column layout; sidebar visible; no overlap |
+| Tablet layout (768×1024) | Chromium tablet emulation | Single column; hamburger menu; sidebar hidden; profile avatar overlaps the banner correctly; no horizontal scrolling |
+| Spacing | Measured the gaps between the composer and posts at 390, 768 and 1280px | An even 24px everywhere |
 | Mobile layout (390×844, iPhone 12-class) | Chromium mobile emulation | Single column; hamburger menu visible and working; **no horizontal scrolling** on feed or profile |
 | Keyboard | Tab from the post box | Focus moves to the photo input, which has a visible focus ring |
 | Back/forward navigation | Feed → profile → edit profile, then back twice and forward once | Pages reload correctly; no console errors |
@@ -192,6 +283,14 @@ Before deploying, the app was run locally with production settings
 | Below the first screen, text could appear on a white background where the page gradient didn't paint. | Full-page screenshot | Added a solid dark background colour under the gradient. |
 | Django 5.0 (end of life April 2025) and gunicorn 22 (HTTP request smuggling, CVE-2024-6827) were pinned. | Dependency review | Upgraded to Django 5.2 LTS, gunicorn 23 and patched versions of the other packages. |
 
+| 98 Python lines exceeded PEP8's 79-character limit; the project relied on a 100-character exception. | Code-quality audit | Reformatted to 79 columns; exception removed from `setup.cfg`. |
+| 10 CSS validator errors (`var()` in gradients and shadows, `backdrop-filter`). | CSS validation | Literal colours in gradients and shadows; `backdrop-filter` removed. |
+| Posts in the feed were 44px apart but the first post was 24px below the composer. | Responsive testing | The feed's gap alone spaces the posts: 24px everywhere. |
+| The post hover lift never appeared: a later rule with equal specificity reset the transform. | CSS audit | Hover rule moved after it; still off for reduced motion. |
+| Submit buttons stayed disabled ("Saving...") on pages restored with the Back button. | JavaScript audit | Reset on `pageshow` from the back/forward cache. |
+| An expired session made liking show a generic error. | JavaScript audit | Specific "session has expired" message. |
+| Six avatars had empty `alt` text; no `<header>` landmark; error pages linked to a hard-coded `/`. | HTML audit | Descriptive alt text, `<header>` around the navbar, `{% url %}` links. |
+
 ---
 
 ## 8. Known issues and unfixed bugs
@@ -201,5 +300,3 @@ the README:
 
 - Comments can be deleted but not edited.
 - The "Suggested for you" sidebar is hidden on screens narrower than 992px.
-- Some CSS validators flag `backdrop-filter` and CSS custom properties, as
-  explained in [section 2](#2-code-validation).

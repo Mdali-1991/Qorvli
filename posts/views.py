@@ -1,4 +1,7 @@
-"""Views for the feed and for creating, editing and deleting posts and comments."""
+"""Views for the feed and for creating, editing and deleting posts
+and comments.
+"""
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
@@ -16,8 +19,10 @@ User = get_user_model()
 
 
 def form_error_text(form):
-    """Join a bound form's error messages into one sentence for a flash message."""
-    return " ".join(error for errors in form.errors.values() for error in errors)
+    """Join a bound form's errors into one sentence for a flash message."""
+    return " ".join(
+        error for errors in form.errors.values() for error in errors
+    )
 
 
 @login_required
@@ -57,7 +62,9 @@ def feed_view(request):
         "posts": page_obj.object_list,
         "post_form": post_form,
         "query": query,
-        "suggested_users": User.objects.exclude(pk=request.user.pk).order_by("-date_joined")[:5],
+        "suggested_users": User.objects.exclude(pk=request.user.pk).order_by(
+            "-date_joined"
+        )[:5],
     }
     return render(request, "posts/feed.html", context)
 
@@ -73,7 +80,9 @@ def create_post_view(request):
         post.save()
         messages.success(request, "Your post has been published.")
     else:
-        messages.error(request, f"Could not publish your post. {form_error_text(form)}")
+        messages.error(
+            request, f"Could not publish your post. {form_error_text(form)}"
+        )
     return redirect("posts:feed")
 
 
@@ -95,7 +104,9 @@ def edit_post_view(request, pk):
     else:
         form = PostForm(instance=post)
 
-    return render(request, "posts/edit_post.html", {"form": form, "post": post})
+    return render(
+        request, "posts/edit_post.html", {"form": form, "post": post}
+    )
 
 
 @login_required
@@ -104,7 +115,9 @@ def delete_post_view(request, pk):
     """Delete a post. Only its author may do this."""
     post = get_object_or_404(Post, pk=pk)
     if post.author != request.user:
-        raise PermissionDenied("You do not have permission to delete this post.")
+        raise PermissionDenied(
+            "You do not have permission to delete this post."
+        )
     post.delete()
     messages.success(request, "Your post has been deleted.")
     return redirect("posts:feed")
@@ -123,7 +136,9 @@ def add_comment_view(request, pk):
         comment.save()
         messages.success(request, "Your comment has been added.")
     else:
-        messages.error(request, f"Comment could not be added. {form_error_text(form)}")
+        messages.error(
+            request, f"Comment could not be added. {form_error_text(form)}"
+        )
     return redirect(post)
 
 
@@ -133,7 +148,9 @@ def delete_comment_view(request, pk):
     """Delete a comment. Allowed for its author or the post's author."""
     comment = get_object_or_404(Comment, pk=pk)
     if comment.author != request.user and comment.post.author != request.user:
-        raise PermissionDenied("You do not have permission to delete this comment.")
+        raise PermissionDenied(
+            "You do not have permission to delete this comment."
+        )
     post = comment.post
     comment.delete()
     messages.success(request, "Comment deleted.")
@@ -143,7 +160,7 @@ def delete_comment_view(request, pk):
 @login_required
 @require_POST
 def toggle_like_view(request, pk):
-    """AJAX endpoint: toggles a like on a post and returns updated state as JSON."""
+    """AJAX endpoint: toggle a like on a post and return the new state."""
     post = get_object_or_404(Post, pk=pk)
     like, created = Like.objects.get_or_create(post=post, user=request.user)
 

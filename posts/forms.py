@@ -1,4 +1,5 @@
 """Forms for creating and editing posts and adding comments."""
+
 from django import forms
 from django.core.exceptions import ValidationError
 
@@ -11,7 +12,9 @@ class PostForm(forms.ModelForm):
     class Meta:
         model = Post
         fields = ("content", "image")
-        error_messages = {"content": {"required": "Your post cannot be empty."}}
+        error_messages = {
+            "content": {"required": "Your post cannot be empty."}
+        }
         widgets = {
             "content": forms.Textarea(
                 attrs={
@@ -22,7 +25,10 @@ class PostForm(forms.ModelForm):
                 }
             ),
             "image": forms.ClearableFileInput(
-                attrs={"class": "form-control qorvli-input", "accept": "image/*"}
+                attrs={
+                    "class": "form-control qorvli-input",
+                    "accept": "image/*",
+                }
             ),
         }
 
@@ -41,7 +47,9 @@ class PostForm(forms.ModelForm):
         if image and hasattr(image, "size"):
             max_size_mb = 8
             if image.size > max_size_mb * 1024 * 1024:
-                raise ValidationError(f"Image file too large ( > {max_size_mb}MB ).")
+                raise ValidationError(
+                    f"Image file too large ( > {max_size_mb}MB )."
+                )
         return image
 
 
