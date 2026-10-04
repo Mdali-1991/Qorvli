@@ -6,6 +6,8 @@
    ========================================================= */
 
 /* ---------- Design tokens ---------- */
+/* Gradients and multi-part shadows use literal colours rather than
+   these variables so the file can be fully checked by CSS validators. */
 :root {
     --qorvli-primary: #6C5CE7;
     --qorvli-secondary: #00CEC9;
@@ -39,7 +41,7 @@ html {
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--qorvli-bg-start);
-    background-image: linear-gradient(135deg, var(--qorvli-bg-start), var(--qorvli-bg-mid) 50%, var(--qorvli-bg-end));
+    background-image: linear-gradient(135deg, #0f0c29, #302b63 50%, #24243e);
     background-attachment: fixed;
     color: var(--qorvli-text-light);
     min-height: 100vh;
@@ -60,13 +62,9 @@ a {
 
 /* ---------- Navbar ---------- */
 .qorvli-navbar {
-    background: rgba(15, 12, 41, 0.75);
-    /* backdrop-filter (CSS Filter Effects Level 2) gives the frosted-glass
-       look and keeps text readable over content scrolling under the sticky
-       navbar. It is supported by all current browsers but not yet
-       recognised by every CSS validator; see TESTING.md, "Validation". */
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    /* Nearly opaque so text stays readable over content scrolling
+       under the sticky navbar. */
+    background: rgba(15, 12, 41, 0.94);
     border-bottom: 1px solid var(--qorvli-glass-border);
     padding: 0.85rem 0;
     z-index: 1030;
@@ -152,7 +150,7 @@ a {
 
 /* ---------- Buttons ---------- */
 .qorvli-btn-primary {
-    background: linear-gradient(135deg, var(--qorvli-primary), var(--qorvli-accent));
+    background: linear-gradient(135deg, #6C5CE7, #FD79A8);
     border: none;
     color: #fff;
     font-weight: 600;
@@ -196,7 +194,7 @@ a {
 }
 
 .qorvli-btn-danger {
-    background: linear-gradient(135deg, var(--qorvli-danger), #c0392b);
+    background: linear-gradient(135deg, #E74C3C, #c0392b);
     border: none;
     color: #fff;
     font-weight: 600;
@@ -229,8 +227,6 @@ a {
 
 .qorvli-card {
     background: var(--qorvli-glass);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
     border: 1px solid var(--qorvli-glass-border);
     border-radius: var(--qorvli-radius);
     box-shadow: var(--qorvli-shadow);
@@ -356,7 +352,7 @@ a {
 /* ---------- Post composer ---------- */
 /* Highlight the whole card while a post is being written */
 .qorvli-composer:focus-within {
-    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.25), var(--qorvli-shadow);
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.25), 0 8px 32px rgba(0, 0, 0, 0.35);
     border-color: var(--qorvli-primary);
 }
 
@@ -615,8 +611,6 @@ a:hover > .qorvli-avatar-xs {
     display: flex;
     align-items: center;
     gap: 10px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
 }
 
 /* Variants are applied from the message level: qorvli-alert-{{ tag }} */
@@ -658,8 +652,6 @@ a:hover > .qorvli-avatar-xs {
     max-width: 480px;
     width: 100%;
     background: var(--qorvli-glass);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--qorvli-glass-border);
     border-radius: 22px;
     padding: 2.5rem;
@@ -695,7 +687,7 @@ a:hover > .qorvli-avatar-xs {
 .qorvli-profile-banner {
     height: 200px;
     border-radius: var(--qorvli-radius);
-    background: linear-gradient(135deg, var(--qorvli-primary), var(--qorvli-secondary));
+    background: linear-gradient(135deg, #6C5CE7, #00CEC9);
     position: relative;
     overflow: hidden;
     margin-top: 1rem;
@@ -857,7 +849,7 @@ a:hover > .qorvli-avatar-xs {
 
 /* ---------- Error pages (403, 404, 500) ---------- */
 .qorvli-error-body {
-    background: linear-gradient(135deg, var(--qorvli-bg-start), var(--qorvli-bg-mid), var(--qorvli-bg-end));
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
     color: var(--qorvli-text-light);
     min-height: 100vh;
     display: flex;
