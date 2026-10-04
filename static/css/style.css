@@ -235,15 +235,15 @@ a {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.qorvli-post-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
-}
-
 .qorvli-feed {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
+}
+
+/* The feed's gap already spaces the posts */
+.qorvli-feed > .qorvli-card {
+    margin-bottom: 0;
 }
 
 /* ---------- Motion ---------- */
@@ -294,6 +294,13 @@ a {
 .qorvli-reveal.is-visible {
     opacity: 1;
     transform: translateY(0);
+}
+
+/* Must come after .is-visible, which would otherwise reset the
+   transform and cancel the lift. */
+.qorvli-post-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
 }
 
 @media (prefers-reduced-motion: reduce) {
