@@ -153,6 +153,7 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=3600)
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     # HSTS preload is a near-permanent commitment for a whole domain and is
-    # not appropriate for a *.herokuapp.com address, so it is deliberately off.
+    # not appropriate for a shared hosting address such as *.onrender.com, so
+    # it is deliberately off.
     SILENCED_SYSTEM_CHECKS = ["security.W021"]
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

@@ -26,7 +26,7 @@ from the repository root (a `.env` with at least `SECRET_KEY` is needed, see
 python manage.py test
 ```
 
-**Result: 37 tests, all passing.**
+**Result: 40 tests, all passing.**
 
 | Area | What is tested |
 |---|---|
@@ -38,6 +38,7 @@ python manage.py test
 | Images | Valid image saved; non-image file rejected; image over 8MB rejected |
 | Comments | Member can comment; blank comment rejected; comment author and post author can delete; anyone else gets 403 |
 | Likes | Liking creates a like and returns JSON; liking again removes it; the database rejects a duplicate like |
+| Deployment | `ensure_superuser` creates the admin from environment variables, is safe to run again, and skips when the variables are missing |
 
 ---
 
@@ -218,7 +219,7 @@ during the final reviews.
 | 31 | Avatar service unavailable | Block `ui-avatars.com` in DevTools (Network → Block request domain) and reload | Default avatar shown everywhere; no broken images | Pass |
 | 32 | Bootstrap CDN unavailable | Block `cdn.jsdelivr.net` and reload | Page still usable; comment panels open; no JavaScript errors in the console | Pass |
 | 33 | Password rules shown | Open the sign-up page | Password requirements are listed under the password field before submitting | Pass |
-| 34 | Live site matches development | Repeat tests 1–37 on the deployed Heroku site | Same behaviour as locally | _To record after deployment_ |
+| 34 | Live site matches development | Repeat tests 1–37 on the deployed Render site | Same behaviour as locally | _To record after deployment_ |
 | 35 | Back button after submitting | Submit a comment, then press Back | Buttons on the restored page work normally (not stuck on "Saving...") | Pass (restore simulated in Chromium; _confirm on the live site in Safari/Firefox_) |
 | 36 | Expired session | Sign out in another tab, then like a post | "Your session has expired. Please sign in again." | Pass |
 | 37 | Clear a chosen photo | Choose a photo in the composer, then cancel the selection | Label returns to "Photo" | Pass |
@@ -246,15 +247,34 @@ Screenshots from these checks are in [`docs/screenshots/`](docs/screenshots/).
 ## 6. Production-configuration check
 
 Before deploying, the app was run locally with production settings
-(`DEBUG=False`, `CLOUDINARY_URL` set) to mirror Heroku:
+(`DEBUG=False`, `CLOUDINARY_URL` set):
 
 | Check | Command | Result |
 |---|---|---|
-| Django deployment checklist | `python manage.py check --deploy` | No issues (HSTS preload is deliberately off for a `herokuapp.com` domain; that check is silenced in `settings.py`) |
+| Django deployment checklist | `python manage.py check --deploy` | No issues (HSTS preload is deliberately off for a shared hosting domain such as `onrender.com`; that check is silenced in `settings.py`) |
 | Static files build | `python manage.py collectstatic --noinput` | Hashed, compressed manifest generated |
 | Image storage | Inspect the configured default storage | `MediaCloudinaryStorage` |
 | Migrations | `python manage.py migrate` | All migrations applied |
 | Production server | `gunicorn qorvli_project.wsgi` | Login page 200, CSS served by WhiteNoise, unknown URL returns the custom 404 |
+
+### Render deployment rehearsal
+
+The Render setup was rehearsed on a fresh clone against a real PostgreSQL 16
+database. The settings matched Render's: `DEBUG=False`, the
+`RENDER_EXTERNAL_HOSTNAME` and `PORT` variables, the admin variables, and no
+`ALLOWED_HOSTS` or `CSRF_TRUSTED_ORIGINS`.
+
+| Check | Result |
+|---|---|
+| `./build.sh`, first deploy | All migrations applied; `Superuser 'siteadmin' created.` |
+| `./build.sh`, redeploy | `No migrations to apply.`; `Superuser 'siteadmin' already exists.` |
+| `gunicorn qorvli_project.wsgi` (Render's start command) | Listens on `$PORT` (10000) automatically |
+| Login form posted from the Render address | Accepted (302 to the feed): the address is trusted automatically |
+| Login form posted from another site | Rejected with 403 (CSRF protection) |
+| `/admin/` as the created superuser | 200, admin dashboard shown |
+| Request for an unknown host | Rejected with 400 |
+| Plain HTTP request | 301 redirect to `https://` |
+| Cookies | Marked `Secure` |
 
 ---
 
